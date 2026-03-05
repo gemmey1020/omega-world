@@ -53,4 +53,4 @@ A B2B2C Hyper-Local Marketplace & SaaS Platform. It empowers local vendors (groc
 ## 7. CURRENT ACTIVE PHASE
 
 **[PHASE 5]: Frontend PWA Scaffolding & Zone Discovery.**
-Task: Setup Next.js environment with Tailwind (Enforcing No-Orange). Build the Zone Selection landing page using Framer Motion and consume the `/api/zones` endpoint.
+Task: Initialize Next.js 15 inside `/client` with Tailwind (Hard-blocked Orange). Build the Splash Screen (Ω) and the Zone Selection landing page using Framer Motion to consume the `/api/zones` endpoint.
