@@ -52,5 +52,5 @@ A B2B2C Hyper-Local Marketplace & SaaS Platform. It empowers local vendors (groc
 
 ## 7. CURRENT ACTIVE PHASE
 
-**[PHASE 5]: Frontend PWA Scaffolding & Zone Discovery.**
-Task: Initialize Next.js 15 inside `/client` with Tailwind (Hard-blocked Orange). Build the Splash Screen (Ω) and the Zone Selection landing page using Framer Motion to consume the `/api/zones` endpoint.
+**[PHASE 5.2]: Hyper-Local Vendor Feed & "Mom-Approved" Sequential Filtering.**
+Task: Develop the `/vendors` page in the Next.js client. Implement a two-tier sequential filtering system (Needs -> Status -> Trust). Integrate the "Waiting Mode" UI logic which uses `is_checkout_available` and `subscription.reason` to manage non-active vendor states without breaking the browsing experience.
