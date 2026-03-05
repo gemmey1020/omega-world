@@ -52,5 +52,5 @@ A B2B2C Hyper-Local Marketplace & SaaS Platform. It empowers local vendors (groc
 
 ## 7. CURRENT ACTIVE PHASE
 
-**[PHASE 3]: Ingestion Engine & Seeding.**
-Task: Populate multi-layered geographical zones and vendors via `DatabaseSeeder`. Develop the `IngestionCommand` to sync external Vite JSON catalogs into the OMEGA relational schema.
+**[PHASE 5]: Frontend PWA Scaffolding & Zone Discovery.**
+Task: Setup Next.js environment with Tailwind (Enforcing No-Orange). Build the Zone Selection landing page using Framer Motion and consume the `/api/zones` endpoint.
