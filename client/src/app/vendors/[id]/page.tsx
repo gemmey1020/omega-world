@@ -5,7 +5,7 @@ import VendorCatalogClient from "@/components/vendors/VendorCatalogClient";
 import { getVendorCatalog } from "@/lib/api";
 import { getVendorCanonicalUrl } from "@/lib/site";
 import { buildVendorLocalBusinessJsonLd, parseVendorId } from "@/lib/vendor-schema";
-import type { VendorCatalogAPI } from "@/types/vendor";
+import type { VendorCatalogAPI, VendorCatalogPageAPI } from "@/types/vendor";
 
 interface VendorPageProps {
   params: Promise<{ id: string }>;
@@ -31,7 +31,8 @@ export async function generateMetadata({ params }: VendorPageProps): Promise<Met
   }
 
   try {
-    const vendor = await getVendorCatalog(vendorId);
+    const catalogPage = await getVendorCatalog(vendorId, 1);
+    const vendor = catalogPage.vendor;
     const canonicalUrl = getVendorCanonicalUrl(vendorId);
 
     return {
@@ -63,13 +64,15 @@ export default async function VendorCatalogPage({ params }: VendorPageProps) {
   }
 
   const canonicalUrl = getVendorCanonicalUrl(vendorId);
-  let vendor: VendorCatalogAPI;
+  let catalogPage: VendorCatalogPageAPI;
 
   try {
-    vendor = await getVendorCatalog(vendorId);
+    catalogPage = await getVendorCatalog(vendorId, 1);
   } catch {
     notFound();
   }
+
+  const vendor: VendorCatalogAPI = catalogPage.vendor;
 
   return (
     <>
@@ -77,7 +80,11 @@ export default async function VendorCatalogPage({ params }: VendorPageProps) {
         id={`vendor-jsonld-${vendor.id}`}
         data={buildLocalBusinessJsonLd(vendor, canonicalUrl)}
       />
-      <VendorCatalogClient vendor={vendor} />
+      <VendorCatalogClient
+        initialVendor={vendor}
+        initialMeta={catalogPage.meta}
+        initialLinks={catalogPage.links}
+      />
     </>
   );
 }

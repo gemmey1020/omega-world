@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\VendorCatalogResource;
+use App\Http\Resources\ProductResource;
 use App\Http\Resources\VendorResource;
+use App\Models\Product;
 use App\Models\Vendor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -43,9 +44,22 @@ class VendorController extends Controller
         return response()->json($payload);
     }
 
-    public function catalog(int $id): JsonResponse
+    public function catalog(Request $request, int $id): JsonResponse
     {
-        $payload = Cache::remember("api:vendors:catalog:{$id}:v1", now()->addSeconds(30), function () use ($id): array {
+        $validated = $request->validate([
+            'page' => ['nullable', 'integer', 'min:1'],
+        ]);
+
+        $page = (int) ($validated['page'] ?? 1);
+        $latestProductTimestamp = Product::query()
+            ->where('vendor_id', $id)
+            ->max('updated_at');
+        $catalogVersion = substr(sha1((string) ($latestProductTimestamp ?? 'no-products')), 0, 12);
+
+        $payload = Cache::remember(
+            "api:vendors:catalog:{$id}:version:{$catalogVersion}:page:{$page}:v3",
+            now()->addSeconds(30),
+            function () use ($id, $page): array {
             $vendor = Vendor::query()
                 ->select('vendors.*')
                 ->selectRaw('ST_AsGeoJSON(vendors.coordinates) as coordinates_geojson')
@@ -53,20 +67,77 @@ class VendorController extends Controller
                 ->whereHas('subscription')
                 ->with([
                     'subscription:id,vendor_id,status,reason,expires_at',
-                    'categories' => function ($categoryQuery) {
-                        $categoryQuery
-                            ->select(['id', 'vendor_id', 'name'])
-                            ->orderBy('name');
-                    },
-                    'categories.products' => function ($productQuery) {
-                        $productQuery
-                            ->select(['id', 'category_id', 'vendor_id', 'external_id', 'title', 'price', 'image_url'])
-                            ->orderBy('title');
-                    },
                 ])
                 ->firstOrFail();
 
-            return (new VendorCatalogResource($vendor))->response()->getData(true);
+            $productsPaginator = Product::query()
+                ->select(['id', 'category_id', 'vendor_id', 'external_id', 'title', 'price', 'image_url'])
+                ->where('vendor_id', $vendor->id)
+                ->with(['category:id,vendor_id,name'])
+                ->orderBy('id')
+                ->paginate(30, ['*'], 'page', $page);
+
+            $categoriesPayload = $productsPaginator->getCollection()
+                ->filter(static fn (Product $product): bool => $product->category !== null)
+                ->groupBy('category_id')
+                ->map(static function ($products): array {
+                    /** @var Product|null $firstProduct */
+                    $firstProduct = $products->first();
+                    $category = $firstProduct?->category;
+
+                    if ($category === null) {
+                        return [];
+                    }
+
+                    return [
+                        'id' => $category->id,
+                        'name' => $category->name,
+                        'products' => ProductResource::collection($products)->resolve(),
+                    ];
+                })
+                ->filter(static fn (array $category): bool => $category !== [])
+                ->values()
+                ->all();
+
+            $subscription = $vendor->subscription;
+            $isCheckoutAvailable = false;
+
+            if ($subscription !== null) {
+                $expiresAt = $subscription->expires_at;
+                $isNotExpired = $expiresAt === null || $expiresAt->isFuture();
+                $isCheckoutAvailable = $vendor->is_active && $subscription->status === 'active' && $isNotExpired;
+            }
+
+            return [
+                'data' => [
+                    'id' => $vendor->id,
+                    'zone_id' => $vendor->zone_id,
+                    'name' => $vendor->name,
+                    'primary_category' => $vendor->primary_category,
+                    'whatsapp_number' => (string) $vendor->whatsapp_number,
+                    'coordinates' => json_decode((string) $vendor->coordinates_geojson, true),
+                    'is_active' => (bool) $vendor->is_active,
+                    'subscription' => [
+                        'status' => $subscription?->status,
+                        'reason' => $subscription?->reason,
+                        'expires_at' => $subscription?->expires_at?->toISOString(),
+                    ],
+                    'is_checkout_available' => $isCheckoutAvailable,
+                    'categories' => $categoriesPayload,
+                ],
+                'meta' => [
+                    'current_page' => $productsPaginator->currentPage(),
+                    'last_page' => $productsPaginator->lastPage(),
+                    'per_page' => $productsPaginator->perPage(),
+                    'total' => $productsPaginator->total(),
+                    'from' => $productsPaginator->firstItem(),
+                    'to' => $productsPaginator->lastItem(),
+                ],
+                'links' => [
+                    'next' => $productsPaginator->nextPageUrl(),
+                    'prev' => $productsPaginator->previousPageUrl(),
+                ],
+            ];
         });
 
         return response()->json($payload);

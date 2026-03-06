@@ -37,3 +37,23 @@ export interface VendorAPI {
 export interface VendorCatalogAPI extends VendorAPI {
   categories: CategoryAPI[];
 }
+
+export interface CatalogMetaAPI {
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+  from: number | null;
+  to: number | null;
+}
+
+export interface CatalogLinksAPI {
+  next: string | null;
+  prev: string | null;
+}
+
+export interface VendorCatalogPageAPI {
+  vendor: VendorCatalogAPI;
+  meta: CatalogMetaAPI;
+  links: CatalogLinksAPI;
+}
