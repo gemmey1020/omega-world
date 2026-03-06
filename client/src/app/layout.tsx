@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import MobileContainer from "@/components/layout/MobileContainer";
+import Providers from "@/app/providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,7 +14,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "OMEGA World",
   description: "Hyper-local marketplace within a secure perimeter.",
 };
@@ -28,9 +29,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-slate-900/10 antialiased`}
       >
-        <MobileContainer>
-          {children}
-        </MobileContainer>
+        <Providers>
+          <MobileContainer>{children}</MobileContainer>
+        </Providers>
       </body>
     </html>
   );

@@ -27,6 +27,8 @@ class VendorResource extends JsonResource
             'id' => $this->id,
             'zone_id' => $this->zone_id,
             'name' => $this->name,
+            'primary_category' => $this->primary_category,
+            'whatsapp_number' => (string) $this->whatsapp_number,
             'coordinates' => json_decode((string) $this->coordinates_geojson, true),
             'is_active' => (bool) $this->is_active,
             'subscription' => [

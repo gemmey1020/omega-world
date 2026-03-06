@@ -1,32 +1,39 @@
-export interface Category {
-    id: string;
-    name: string;
-    icon: string; // We'll map this to lucide-react icons in the UI
+import type { GeoJSONPoint } from "@/types/zone";
+
+export type VendorSubscriptionStatus = "active" | "expired" | "trial" | (string & {});
+
+export interface VendorSubscriptionAPI {
+  status: VendorSubscriptionStatus | null;
+  reason: string | null;
+  expires_at: string | null;
 }
 
-export interface Subscription {
-    status: 'active' | 'expired' | 'suspended';
-    reason?: string;
-    expires_at?: string;
+export interface ProductAPI {
+  id: number;
+  external_id: string;
+  title: string;
+  price: number;
+  image_url: string | null;
 }
 
-export interface Vendor {
-    id: string;
-    name: string;
-    category_id: string;
-    category?: Category;
-    isOpenNow: boolean;
-    offersFastDelivery: boolean;
-    is_checkout_available: boolean;
-    subscription: Subscription;
-    image_url?: string;
-    rating?: number;
-    delivery_time_mins?: string;
+export interface CategoryAPI {
+  id: number;
+  name: string;
+  products: ProductAPI[];
 }
 
-export interface FilterState {
-    searchQuery: string;
-    categoryId: string | null;
-    isOpenNow: boolean;
-    isFastDelivery: boolean;
+export interface VendorAPI {
+  id: number;
+  zone_id: number;
+  name: string;
+  primary_category: string | null;
+  whatsapp_number: string;
+  coordinates: GeoJSONPoint | null;
+  is_active: boolean;
+  subscription: VendorSubscriptionAPI;
+  is_checkout_available: boolean;
+}
+
+export interface VendorCatalogAPI extends VendorAPI {
+  categories: CategoryAPI[];
 }

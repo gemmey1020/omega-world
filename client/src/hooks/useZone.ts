@@ -1,34 +1,46 @@
-import { useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import Cookies from "js-cookie";
+import type { SelectedZone } from "@/types/zone";
 
-export interface Zone {
-    id: string;
-    name: string;
+function canUseSecureCookies(): boolean {
+  return typeof window !== "undefined" && window.location.protocol === "https:";
 }
 
 export function useZone() {
-    const [activeZone, setActiveZone] = useState<Zone | null>(null);
+  const [activeZone, setActiveZone] = useState<SelectedZone | null>(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
 
-    useEffect(() => {
-        const zoneId = Cookies.get("zone_id");
-        const zoneName = Cookies.get("zone_name");
-        if (zoneId && zoneName) {
-            setActiveZone({ id: zoneId, name: zoneName });
-        }
-    }, []);
+    const zoneIdCookie = Cookies.get("zone_id");
+    const zoneName = Cookies.get("zone_name");
 
-    const selectZone = (zone: Zone) => {
-        // Ensuring "Secure" flag usage for state persistence (and sameSite: 'strict' for trust center design)
-        Cookies.set("zone_id", zone.id, { secure: true, sameSite: "strict" });
-        Cookies.set("zone_name", zone.name, { secure: true, sameSite: "strict" });
-        setActiveZone(zone);
-    };
+    if (!zoneIdCookie || !zoneName) {
+      return null;
+    }
 
-    const clearZone = () => {
-        Cookies.remove("zone_id");
-        Cookies.remove("zone_name");
-        setActiveZone(null);
-    };
+    const zoneId = Number.parseInt(zoneIdCookie, 10);
 
-    return { activeZone, selectZone, clearZone };
+    if (Number.isNaN(zoneId)) {
+      return null;
+    }
+
+    return { id: zoneId, name: zoneName };
+  });
+
+  const selectZone = useCallback((zone: SelectedZone) => {
+    const secure = canUseSecureCookies();
+
+    Cookies.set("zone_id", String(zone.id), { secure, sameSite: "strict" });
+    Cookies.set("zone_name", zone.name, { secure, sameSite: "strict" });
+    setActiveZone(zone);
+  }, []);
+
+  const clearZone = useCallback(() => {
+    Cookies.remove("zone_id");
+    Cookies.remove("zone_name");
+    setActiveZone(null);
+  }, []);
+
+  return { activeZone, selectZone, clearZone };
 }

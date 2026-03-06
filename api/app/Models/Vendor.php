@@ -15,6 +15,7 @@ class Vendor extends Model
 
     protected $fillable = [
         'name',
+        'primary_category',
         'whatsapp_number',
         'config_url',
         'zone_id',

@@ -74,7 +74,10 @@ class OmegaSyncVendors extends Command
                     return;
                 }
 
-                $this->syncVendorCatalog($vendor, $payload['categories'], $stats);
+                $primaryCategory = $this->syncVendorCatalog($vendor, $payload['categories'], $stats);
+                $vendor->update([
+                    'primary_category' => $primaryCategory,
+                ]);
             } catch (Throwable $exception) {
                 $stats['vendor_failures']++;
 
@@ -97,8 +100,10 @@ class OmegaSyncVendors extends Command
         return self::SUCCESS;
     }
 
-    protected function syncVendorCatalog(Vendor $vendor, array $categories, array &$stats): void
+    protected function syncVendorCatalog(Vendor $vendor, array $categories, array &$stats): ?string
     {
+        $primaryCategory = null;
+
         foreach ($categories as $categoryData) {
             if (! is_array($categoryData) || ! isset($categoryData['name']) || ! is_string($categoryData['name'])) {
                 Log::warning('Skipping category: invalid category name.', [
@@ -116,6 +121,10 @@ class OmegaSyncVendors extends Command
                 ]);
 
                 continue;
+            }
+
+            if ($primaryCategory === null) {
+                $primaryCategory = $categoryName;
             }
 
             // Respect soft-deletes: do not sync into deleted rows.
@@ -225,5 +234,7 @@ class OmegaSyncVendors extends Command
                 $stats['products_synced']++;
             }
         }
+
+        return $primaryCategory;
     }
 }
