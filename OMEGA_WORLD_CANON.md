@@ -2,55 +2,56 @@
 
 **Status:** ACTIVE / FROZEN FOR EXECUTION
 **Governing System:** OMEGA (Ω)
-**Version:** 2.0 (Post-Phase 2 Validation)
+**Version:** 3.0 (Post-Phase 5.2 - The Intelligent Growth Update)
 
 ## 1. SYSTEM PURPOSE
 
-A B2B2C Hyper-Local Marketplace & SaaS Platform. It empowers local vendors (grocers, butchers, etc.) with individual Vite-based digital stores while aggregating them into a unified, search-driven discovery engine for compound residents. Strictly delivered as a Mobile-First PWA.
+A B2B2C Hyper-Local Marketplace & SaaS Platform. It empowers local vendors (grocers, butchers, etc.) with digital presence while aggregating them into a GEI-optimized (Generative Engine Intelligence) discovery engine for residents. Strictly delivered as a Mobile-First PWA.
 
 ## 2. AGENT TOPOLOGY & AUTHORITY
 
 - **Jemy (Founder & Chief Systems Architect):** Absolute authority. Defines state and approves progression.
 - **Thinking Node (Gemini):** System architecture, schema definition, and progression logic.
-- **Execution Node (Codex):** Writes the physical code. Must not bypass architectural constraints.
+- **Execution Node (Codex):** Writes the physical code.
 - **Audit Node (Opus):** Reviews code against this Canon. Rejects any architectural drift.
 
 ## 3. STRICT ARCHITECTURAL CONSTRAINTS
 
 - **Backend:** Laravel 12 (Headless API) + PostgreSQL (with PostGIS).
 - **Frontend:** Next.js (App Router) + Tailwind CSS + Framer Motion.
+- **AI-First Indexing (GEI/GEO):** All frontend pages MUST implement JSON-LD (Schema.org) using `@type: LocalBusiness` to ensure Generative AI engines (Gemini/ChatGPT) can index and recommend vendors.
 - **The "No Orange" Rule:** The color ORANGE is globally banned from all UI palettes.
-- **Geographical Hierarchy:** Zones follow a strict nested structure: [City] -> [District/Settlement] -> [Mahallya] -> [Region].
-- **Geo-Locking:** Users only see vendors within their specific geographical boundary unless manually expanded.
-- **Persistence (Soft Deletes):** `SoftDeletes` is mandatory for `users`, `zones`, `vendors`, `categories`, and `products` to ensure data recovery and audit trails.
-- **Isolated Cart:** Checkout is locked to ONE vendor per transaction. Handoff is via serialized WhatsApp Business API payload.
-- **Auth Engine:** Anonymous-First (`device_hash`) with optional Google OAuth upgrade.
+- **Geographical Hierarchy:** [City] -> [District] -> [Mahallya] -> [Region].
+- **Geo-Locking:** Users only see vendors within their specific geographical boundary.
+- **Persistence (Soft Deletes):** Mandatory for `users`, `zones`, `vendors`, `categories`, and `products`.
+- **Isolated Cart:** Checkout locked to ONE vendor per transaction. Handoff via WhatsApp Business API payload.
+- **Auth Engine:** Anonymous-First (`device_hash`) with optional Google OAuth.
 
 ## 4. SAAS & SUBSCRIPTION LOGIC
 
-- **State Persistence:** Suspended vendors (inactive/expired) MUST preserve their catalogs.
-- **"Waiting" Mode:** UI must replace product images/buy buttons with "Waiting/Placeholder" states for vendors in a non-active status.
-- **Locked Reason Codes:** The `reason` field in `vendor_subscriptions` MUST only use:
-  - `SUBSCRIPTION_EXPIRED`
-  - `ADMIN_BLOCK`
-  - `PENDING_SETUP`
-  - `MANUAL_PAUSE`
-  - `INITIAL_TRIAL`
+- **State Persistence:** Suspended vendors MUST preserve their catalogs.
+- **"Waiting" Mode:** UI replaces buy buttons with "Waiting/Placeholder" states for non-active vendors.
+- **"Join the Family" Lead Gen:** A high-conversion enrollment page integrated into the PWA using scarcity triggers (e.g., "10 Seats Left for Free Trial").
+- **Locked Reason Codes:** `SUBSCRIPTION_EXPIRED`, `ADMIN_BLOCK`, `PENDING_SETUP`, `MANUAL_PAUSE`, `INITIAL_TRIAL`.
 
 ## 5. THE ADAPTER (INGESTION ENGINE)
 
 - **Mechanism:** Laravel fetches `store.config.json` from vendor `config_url`.
-- **Mapping:** External JSON is parsed, sanitized, and mapped to internal `categories` and `products` tables.
-- **Sync Policy:** Next.js never hits external vendor URLs. Data is served exclusively through the internal OMEGA API.
+- **Sync Policy:** Next.js never hits external vendor URLs. Data served exclusively through OMEGA API.
 
 ## 6. THE ANTI-DRIFT CONTRACT
 
 1. **No Assumptions:** If a requirement is missing, STOP and ask the Architect.
-2. **Audit Before Trust:** Opus must audit every commit against these constraints.
+2. **Audit Before Trust:** Every commit is audited against these constraints.
 3. **No UI Without Engine:** Backend contracts must be finalized before building UI.
-4. **Language Policy:** Reasoning in Arabic. Technical output, code, and documentation in English.
+4. **Language Policy:** Reasoning in Arabic. Technical output in English.
 
 ## 7. CURRENT ACTIVE PHASE
 
-**[PHASE 5.2]: Hyper-Local Vendor Feed & "Mom-Approved" Sequential Filtering.**
-Task: Develop the `/vendors` page in the Next.js client. Implement a two-tier sequential filtering system (Needs -> Status -> Trust). Integrate the "Waiting Mode" UI logic which uses `is_checkout_available` and `subscription.reason` to manage non-active vendor states without breaking the browsing experience.
+**[PHASE 6]: The Living Pulse & Lead Acquisition.**
+Task:
+
+1. Replace frontend mocks with Live API integration.
+2. Build the "Join the Family" (Enrollment) page with psychological triggers and WhatsApp redirection.
+3. Implement GEI Optimization (JSON-LD) for all vendor pages.
+4. Finalize the Isolated Cart with `device_hash` persistence and WhatsApp handoff.
