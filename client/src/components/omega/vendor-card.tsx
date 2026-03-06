@@ -2,6 +2,9 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Clock } from 'lucide-react';
+import PrimaryButton from '@/components/ui/PrimaryButton';
+import { triggerHaptic } from '@/lib/haptic';
 
 interface VendorCardProps {
     id: string;
@@ -34,11 +37,11 @@ export function VendorCard({
 
     const handleAddToCart = async () => {
         setIsLoading(true);
-        if (navigator.vibrate) navigator.vibrate(50);
+        triggerHaptic(50);
         try {
             onAddToCart(id);
         } catch {
-            if (navigator.vibrate) navigator.vibrate(100);
+            triggerHaptic(100);
         } finally {
             setIsLoading(false);
         }
@@ -64,9 +67,10 @@ export function VendorCard({
                 )}
 
                 {isWaiting && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#F8FAFC] to-[#E2E8F0] opacity-60 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-[#E2E8F0]/70 flex flex-col items-center justify-center gap-5">
+                        <Clock className="h-12 w-12 text-[#1E293B]" />
                         <motion.span
-                            animate={{ opacity: [1, 0.7, 1] }}
+                            animate={{ opacity: [1, 0.6, 1] }}
                             transition={{ duration: 4, repeat: Infinity }}
                             className="text-[#1E293B] text-sm font-semibold text-center px-3"
                         >
@@ -76,8 +80,8 @@ export function VendorCard({
                 )}
             </div>
 
-            <div className="p-4 pt-0 flex flex-col gap-3">
-                <div className="flex items-baseline justify-between gap-2">
+            <div className="p-4 pt-0 flex flex-col space-interactive-y">
+                <div className="flex items-baseline justify-between gap-5">
                     <h3 className="text-[clamp(1rem,0.9rem+0.8vw,1.25rem)] font-bold text-[#1E293B] line-clamp-2">
                         {productName}
                     </h3>
@@ -96,14 +100,14 @@ export function VendorCard({
                     </motion.div>
                 )}
 
-                <div className="flex items-center gap-1 text-xs text-[#9CA3AF] font-medium">
+                <div className="flex items-center gap-5 text-xs text-[#9CA3AF] font-medium">
                     <span>{vendorName}</span>
                     <span>•</span>
                     <span>{vendorDistance}</span>
                     {isOnline && (
                         <>
                             <span>•</span>
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-5">
                                 <motion.div
                                     animate={{ boxShadow: ['0 0 0 0 rgba(16,185,129,0.4)', '0 0 0 6px rgba(16,185,129,0)', '0 0 0 0 rgba(16,185,129,0)'] }}
                                     transition={{ duration: 4, repeat: Infinity }}
@@ -115,18 +119,18 @@ export function VendorCard({
                     )}
                 </div>
 
-                <motion.button
-                    onClick={handleAddToCart}
-                    disabled={isLoading || isWaiting}
+                <motion.div
                     whileHover={{ scale: isWaiting ? 1 : 1.02 }}
                     whileTap={{ scale: isWaiting ? 1 : 0.97 }}
-                    className={`h-14 w-full rounded-[10px] font-semibold text-white text-sm transition-all duration-150 ${isWaiting
-                            ? 'bg-[#9CA3AF] cursor-not-allowed'
-                            : 'bg-[#1E293B] hover:bg-[#0F172A] cursor-pointer'
-                        }`}
                 >
-                    {isLoading ? 'Adding...' : 'Add to Cart'}
-                </motion.button>
+                    <PrimaryButton
+                        onClick={handleAddToCart}
+                        disabled={isLoading || isWaiting}
+                        className={`w-full ${isWaiting ? 'opacity-70' : ''}`}
+                    >
+                        {isLoading ? 'Adding...' : 'Add to Cart'}
+                    </PrimaryButton>
+                </motion.div>
             </div>
         </motion.div>
     );

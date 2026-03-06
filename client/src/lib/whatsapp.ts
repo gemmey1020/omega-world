@@ -14,6 +14,7 @@ export function buildWhatsAppCheckoutURL(
   vendor: Pick<VendorAPI, "name" | "whatsapp_number">,
   items: readonly CheckoutWhatsAppItem[],
   deviceHash: string,
+  shareCartUrl?: string | null,
 ): string {
   const normalizedTarget = normalizeNumber(vendor.whatsapp_number);
 
@@ -34,6 +35,7 @@ export function buildWhatsAppCheckoutURL(
     "Items:",
     ...orderLines,
     `Total: EGP ${total.toFixed(2)}`,
+    ...(shareCartUrl ? [`Share this cart: ${shareCartUrl}`] : []),
   ].join("\n");
 
   return `https://wa.me/${normalizedTarget}?text=${encodeURIComponent(message)}`;

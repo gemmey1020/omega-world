@@ -1,20 +1,33 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import PrimaryButton from "@/components/ui/PrimaryButton";
 
 interface ClearCartModalProps {
   isOpen: boolean;
+  mode: "vendor-switch" | "shared-cart";
   vendorName: string | null;
+  incomingVendorName?: string | null;
   onKeepCart: () => void;
-  onClearAndSwitch: () => void;
+  onConfirmAction: () => void;
 }
 
 export default function ClearCartModal({
   isOpen,
+  mode,
   vendorName,
+  incomingVendorName,
   onKeepCart,
-  onClearAndSwitch,
+  onConfirmAction,
 }: ClearCartModalProps) {
+  const title = mode === "shared-cart" ? "Shared Cart Received" : "Switch Vendor?";
+
+  const message = mode === "shared-cart"
+    ? `You received a shared cart from ${incomingVendorName ?? "another user"}. Keep your current cart or replace it with the shared items.`
+    : `You already have items from ${vendorName ?? "another vendor"}. Starting a new order will clear your current cart.`;
+
+  const confirmLabel = mode === "shared-cart" ? "Replace With Shared Cart" : "Clear & Switch";
+
   return (
     <AnimatePresence>
       {isOpen ? (
@@ -28,29 +41,27 @@ export default function ClearCartModal({
             initial={{ y: 18, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 12, opacity: 0 }}
-            className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl"
+            className="w-full max-w-sm rounded-[var(--radius-primary)] bg-white p-5 shadow-2xl"
           >
-            <h2 className="text-lg font-semibold text-navy">Switch Vendor?</h2>
-            <p className="mt-2 text-sm text-slate">
-              You already have items from <span className="font-semibold text-navy">{vendorName ?? "another vendor"}</span>.
-              Starting a new order will clear your current cart.
-            </p>
+            <h2 className="text-lg font-semibold text-navy">{title}</h2>
+            <p className="mt-2 text-sm text-muted">{message}</p>
 
-            <div className="mt-5 flex gap-2">
+            <div className="mt-5 flex flex-col gap-5">
               <button
                 type="button"
                 onClick={onKeepCart}
-                className="flex-1 rounded-xl border border-slate/20 px-3 py-2.5 text-sm font-medium text-slate transition hover:border-slate/40"
+                className="min-h-14 flex-1 rounded-[var(--radius-secondary)] border border-slate/20 px-3 py-2.5 text-sm font-medium text-navy transition hover:border-slate/40"
               >
                 Keep Cart
               </button>
-              <button
+
+              <PrimaryButton
                 type="button"
-                onClick={onClearAndSwitch}
-                className="flex-1 rounded-xl bg-red-500 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-red-600"
+                onClick={onConfirmAction}
+                className="w-full bg-red-500 hover:bg-red-600"
               >
-                Clear &amp; Switch
-              </button>
+                {confirmLabel}
+              </PrimaryButton>
             </div>
           </motion.div>
         </motion.div>

@@ -57,7 +57,7 @@ export default function ZoneSelectionPage() {
           <ShieldCheck className="h-6 w-6 text-emerald" />
         </div>
         <h1 className="mb-3 text-3xl font-bold tracking-tight text-navy">OMEGA World</h1>
-        <p className="mx-auto max-w-[280px] text-sm leading-relaxed text-slate">
+        <p className="mx-auto max-w-[280px] text-sm leading-relaxed text-muted">
           Select your secure zone to unlock the hyper-local vendor network.
         </p>
       </motion.div>
@@ -80,14 +80,14 @@ export default function ZoneSelectionPage() {
         ) : null}
 
         {!loading && !error && zones.length === 0 ? (
-          <div className="rounded-2xl border border-slate/20 bg-slate/5 p-4 text-sm text-slate">
+          <div className="rounded-2xl border border-slate/20 bg-slate/5 p-4 text-sm text-muted">
             No active zones are available yet.
           </div>
         ) : null}
 
         {!loading && !error && zones.length > 0 ? (
           <motion.div
-            className="space-y-4"
+            className="space-interactive-y"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
@@ -106,10 +106,10 @@ export default function ZoneSelectionPage() {
                       : "border-slate/20 bg-white hover:border-navy/30 hover:shadow-lg"
                   }`}
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-5">
                     <div
                       className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                        isSelected ? "bg-emerald/20 text-emerald" : "bg-slate/10 text-slate"
+                        isSelected ? "bg-emerald/20 text-emerald" : "bg-slate/10 text-muted"
                       }`}
                     >
                       <MapPin className="h-5 w-5" />
@@ -118,7 +118,7 @@ export default function ZoneSelectionPage() {
                       <h3 className={`text-lg font-semibold ${isSelected ? "text-emerald" : "text-navy"}`}>
                         {zone.name}
                       </h3>
-                      <p className="mt-1 text-xs text-slate">Active perimeter</p>
+                      <p className="mt-1 text-xs text-muted">Active perimeter</p>
                     </div>
                   </div>
                   {isSelected ? <span className="h-3 w-3 rounded-full bg-emerald" /> : null}
@@ -132,7 +132,7 @@ export default function ZoneSelectionPage() {
       <div className="pt-6">
         <Link
           href="/vendors"
-          className="block w-full rounded-2xl bg-navy px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-navy/90"
+          className="flex min-h-14 w-full items-center justify-center rounded-[var(--radius-secondary)] bg-navy px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-navy/90"
         >
           Continue to Vendors
         </Link>

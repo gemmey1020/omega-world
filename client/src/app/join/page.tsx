@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { ShieldCheck } from "lucide-react";
+import PrimaryButton from "@/components/ui/PrimaryButton";
 import { useZone } from "@/hooks/useZone";
 import { useScarcityCounter } from "@/hooks/useScarcityCounter";
 import { createJoinSession, getZones, submitJoinLead } from "@/lib/api";
@@ -185,7 +186,7 @@ export default function JoinPage() {
             <ShieldCheck className="h-6 w-6 text-emerald" />
           </div>
           <h1 className="text-3xl font-bold text-navy">Join the OMEGA Family</h1>
-          <p className="mt-2 text-sm text-slate">
+          <p className="mt-2 text-sm text-muted">
             Start your hyper-local digital storefront and reach nearby customers.
           </p>
         </div>
@@ -195,7 +196,7 @@ export default function JoinPage() {
           <p className="mt-1 text-2xl font-bold text-navy">Only {remainingSeats} seats left</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 rounded-3xl border border-slate/15 bg-white p-5 shadow-sm">
+        <form onSubmit={handleSubmit} className="space-interactive-y rounded-3xl border border-slate/15 bg-white p-5 shadow-sm">
           {/* Honeypot anti-spam: hidden from humans, auto-filled by bots */}
           <input
             type="text"
@@ -208,7 +209,7 @@ export default function JoinPage() {
             className="absolute -left-[9999px] h-0 w-0 overflow-hidden opacity-0"
           />
           <div>
-            <label htmlFor="business_name" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate">
+            <label htmlFor="business_name" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted">
               Business Name
             </label>
             <input
@@ -222,7 +223,7 @@ export default function JoinPage() {
           </div>
 
           <div>
-            <label htmlFor="owner_name" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate">
+            <label htmlFor="owner_name" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted">
               Owner Name
             </label>
             <input
@@ -236,7 +237,7 @@ export default function JoinPage() {
           </div>
 
           <div>
-            <label htmlFor="whatsapp_number" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate">
+            <label htmlFor="whatsapp_number" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted">
               WhatsApp Number
             </label>
             <input
@@ -251,7 +252,7 @@ export default function JoinPage() {
           </div>
 
           <div>
-            <label htmlFor="zone_id" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate">
+            <label htmlFor="zone_id" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted">
               Zone
             </label>
 
@@ -288,16 +289,16 @@ export default function JoinPage() {
             </p>
           ) : null}
 
-          <button
+          <PrimaryButton
             type="submit"
             disabled={submitting}
-            className="w-full rounded-xl bg-navy px-4 py-3 text-sm font-semibold text-white transition hover:bg-navy/90"
+            className="w-full"
           >
             {submitting ? "Securing your application..." : "Apply Now via WhatsApp"}
-          </button>
+          </PrimaryButton>
         </form>
 
-        <p className="mt-6 text-center text-xs text-slate">
+        <p className="mt-6 text-center text-xs text-muted">
           Trusted by local vendors growing across secure OMEGA zones.
         </p>
       </div>

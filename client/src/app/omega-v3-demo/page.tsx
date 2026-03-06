@@ -47,7 +47,7 @@ export default function OmegaV3DemoPage() {
                         {[
                             { title: 'Radius Logic', body: '18px primary (cards) + 10px secondary (precision elements).' },
                             { title: 'Tap Targets', body: '56px buttons + 12px dead zones for tremor-affected users.' },
-                            { title: 'Orange Control', body: '#EA580C only for Checkout bar. Waiting states use soft overlay.' },
+                            { title: 'Action Laser Control', body: 'Action Laser token is reserved for Checkout bar and critical alerts.' },
                             { title: 'Haptic Feedback', body: 'Success (50ms), Blocked (100ms), Checkout (80ms).' },
                         ].map((item) => (
                             <div key={item.title} className="rounded-[18px] border border-[#E2E8F0] bg-white p-4 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)]">
@@ -88,7 +88,7 @@ export default function OmegaV3DemoPage() {
                             { name: 'Warm Off-White', hex: '#F8FAFC', role: 'Background' },
                             { name: 'Deep Navy', hex: '#1E293B', role: 'Text, Icons' },
                             { name: 'Slate Grey', hex: '#E2E8F0', role: 'Borders' },
-                            { name: 'Burnt Orange', hex: '#EA580C', role: 'Checkout Only' },
+                            { name: 'Action Laser', hex: 'var(--color-laser)', role: 'Checkout Only' },
                             { name: 'Emerald Green', hex: '#10B981', role: 'Status Live' },
                             { name: 'Soft Red', hex: '#DC2626', role: 'Alerts' },
                             { name: 'Neutral Grey', hex: '#9CA3AF', role: 'Disabled' },

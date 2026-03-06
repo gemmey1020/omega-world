@@ -46,6 +46,14 @@ class AppServiceProvider extends ServiceProvider
                 Limit::perMinutes(15, 3)->by("join-submit:device:{$deviceHash}"),
             ];
         });
+
+        RateLimiter::for('cart-token-store', function (Request $request) {
+            return Limit::perMinute(10)->by($this->resolveIpRateLimitKey($request));
+        });
+
+        RateLimiter::for('cart-token-resolve', function (Request $request) {
+            return Limit::perMinute(30)->by($this->resolveIpRateLimitKey($request));
+        });
     }
 
     private function resolveIpRateLimitKey(Request $request): string
