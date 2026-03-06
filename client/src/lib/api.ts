@@ -9,6 +9,21 @@ interface ApiItemResponse<T> {
   data: T;
 }
 
+interface ApiValidationErrorResponse {
+  message?: string;
+  errors?: Record<string, string[]>;
+}
+
+class ApiError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -19,6 +34,32 @@ function hasDataArray<T>(value: unknown): value is ApiCollectionResponse<T> {
 
 function hasDataItem<T>(value: unknown): value is ApiItemResponse<T> {
   return isRecord(value) && "data" in value && !Array.isArray(value.data);
+}
+
+function extractApiErrorMessage(value: unknown): string | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const message = typeof value.message === "string" ? value.message.trim() : "";
+  if (message) {
+    return message;
+  }
+
+  if (!isRecord(value.errors)) {
+    return null;
+  }
+
+  for (const fieldErrors of Object.values(value.errors)) {
+    if (Array.isArray(fieldErrors)) {
+      const firstError = fieldErrors.find((fieldError) => typeof fieldError === "string" && fieldError.trim() !== "");
+      if (typeof firstError === "string") {
+        return firstError;
+      }
+    }
+  }
+
+  return null;
 }
 
 function resolveApiUrl(path: string): string {
@@ -37,7 +78,7 @@ function resolveApiUrl(path: string): string {
   return `${apiBase.replace(/\/+$/, "")}/api${normalizedPath}`;
 }
 
-async function fetchJSON<T>(path: string, init?: RequestInit): Promise<T> {
+async function requestApi(path: string, init?: RequestInit): Promise<Response> {
   const response = await fetch(resolveApiUrl(path), {
     ...init,
     headers: {
@@ -45,12 +86,27 @@ async function fetchJSON<T>(path: string, init?: RequestInit): Promise<T> {
       ...(init?.headers ?? {}),
     },
     cache: "no-store",
+    credentials: init?.credentials ?? "same-origin",
   });
 
   if (!response.ok) {
-    throw new Error(`API request failed with status ${response.status}`);
+    let payload: ApiValidationErrorResponse | null = null;
+
+    try {
+      payload = (await response.json()) as ApiValidationErrorResponse;
+    } catch {
+      payload = null;
+    }
+
+    const message = extractApiErrorMessage(payload) ?? `API request failed with status ${response.status}`;
+    throw new ApiError(response.status, message);
   }
 
+  return response;
+}
+
+async function fetchJSON<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await requestApi(path, init);
   return (await response.json()) as T;
 }
 
@@ -94,4 +150,33 @@ export async function getVendorCatalog(vendorId: number): Promise<VendorCatalogA
   }
 
   throw new Error("Unexpected vendor catalog response shape.");
+}
+
+export async function createJoinSession(): Promise<void> {
+  await requestApi("/join/session", { method: "GET" });
+}
+
+interface JoinLeadPayload {
+  business_name: string;
+  owner_name: string;
+  whatsapp_number: string;
+  zone_id: number;
+  device_hash: string;
+  company_website: string;
+}
+
+export async function submitJoinLead(payload: JoinLeadPayload): Promise<string> {
+  const response = await fetchJSON<ApiItemResponse<{ redirect_url: string }>>("/join/lead", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!hasDataItem<{ redirect_url: string }>(response) || typeof response.data.redirect_url !== "string") {
+    throw new Error("Unexpected join lead response shape.");
+  }
+
+  return response.data.redirect_url;
 }

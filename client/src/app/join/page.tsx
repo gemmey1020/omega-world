@@ -4,8 +4,8 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { ShieldCheck } from "lucide-react";
 import { useZone } from "@/hooks/useZone";
 import { useScarcityCounter } from "@/hooks/useScarcityCounter";
-import { getZones } from "@/lib/api";
-import { buildJoinWhatsAppURL } from "@/lib/whatsapp";
+import { createJoinSession, getZones, submitJoinLead } from "@/lib/api";
+import { getDeviceHash } from "@/lib/device";
 import type { ZoneAPI } from "@/types/zone";
 
 interface JoinFormState {
@@ -15,8 +15,7 @@ interface JoinFormState {
   zone_id: string;
 }
 
-// Strict Egyptian mobile: +20 followed by 1 (mobile prefix) then 9 digits
-const EGYPT_MOBILE_PATTERN = /^\+201[0-9]\d{8}$/;
+const EGYPT_MOBILE_PATTERN = /^\+20(?:10|11|12|15)\d{8}$/;
 const SUBMIT_COOLDOWN_MS = 5000;
 
 export default function JoinPage() {
@@ -24,6 +23,7 @@ export default function JoinPage() {
   const { remainingSeats, decrement } = useScarcityCounter();
   const [zones, setZones] = useState<ZoneAPI[]>([]);
   const [loadingZones, setLoadingZones] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [lastSubmitTime, setLastSubmitTime] = useState(0);
   // Honeypot: invisible field that bots will auto-fill
@@ -70,6 +70,26 @@ export default function JoinPage() {
     };
   }, [activeZone]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function initializeJoinSession() {
+      try {
+        await createJoinSession();
+      } catch (error) {
+        if (isMounted) {
+          setSubmitError(error instanceof Error ? error.message : "Unable to initialize secure join session.");
+        }
+      }
+    }
+
+    void initializeJoinSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const selectedZoneName = useMemo(() => {
     if (activeZone) {
       return activeZone.name;
@@ -107,8 +127,13 @@ export default function JoinPage() {
     return null;
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>): void {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
+
+    if (submitting) {
+      return;
+    }
+
     setSubmitError(null);
 
     // Honeypot trap: if filled, silently reject (bots fill hidden fields)
@@ -130,24 +155,26 @@ export default function JoinPage() {
       return;
     }
 
-    const joinTarget = process.env.NEXT_PUBLIC_JOIN_WHATSAPP_NUMBER;
-
-    if (!joinTarget) {
-      setSubmitError("Join destination is not configured. Please contact support.");
-      return;
-    }
-
     setLastSubmitTime(now);
+    setSubmitting(true);
 
-    const joinURL = buildJoinWhatsAppURL(joinTarget, {
-      business_name: form.business_name.trim(),
-      owner_name: form.owner_name.trim(),
-      whatsapp_number: form.whatsapp_number.trim(),
-      zone_name: selectedZoneName,
-    });
+    try {
+      const redirectUrl = await submitJoinLead({
+        business_name: form.business_name.trim(),
+        owner_name: form.owner_name.trim(),
+        whatsapp_number: form.whatsapp_number.trim(),
+        zone_id: Number(form.zone_id),
+        device_hash: getDeviceHash(),
+        company_website: honeypot,
+      });
 
-    decrement();
-    window.location.href = joinURL;
+      decrement();
+      window.location.assign(redirectUrl);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Unable to submit your join request.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -263,9 +290,10 @@ export default function JoinPage() {
 
           <button
             type="submit"
+            disabled={submitting}
             className="w-full rounded-xl bg-navy px-4 py-3 text-sm font-semibold text-white transition hover:bg-navy/90"
           >
-            Apply Now via WhatsApp
+            {submitting ? "Securing your application..." : "Apply Now via WhatsApp"}
           </button>
         </form>
 

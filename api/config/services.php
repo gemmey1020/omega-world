@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'omega' => [
+        'join_whatsapp_number' => env('JOIN_WHATSAPP_NUMBER'),
+    ],
+
 ];
