@@ -15,7 +15,9 @@ interface JoinFormState {
   zone_id: string;
 }
 
-const EGYPT_MOBILE_PATTERN = /^\+20\d{10}$/;
+// Strict Egyptian mobile: +20 followed by 1 (mobile prefix) then 9 digits
+const EGYPT_MOBILE_PATTERN = /^\+201[0-9]\d{8}$/;
+const SUBMIT_COOLDOWN_MS = 5000;
 
 export default function JoinPage() {
   const { activeZone } = useZone();
@@ -23,6 +25,9 @@ export default function JoinPage() {
   const [zones, setZones] = useState<ZoneAPI[]>([]);
   const [loadingZones, setLoadingZones] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [lastSubmitTime, setLastSubmitTime] = useState(0);
+  // Honeypot: invisible field that bots will auto-fill
+  const [honeypot, setHoneypot] = useState("");
   const [form, setForm] = useState<JoinFormState>({
     business_name: "",
     owner_name: "",
@@ -106,6 +111,18 @@ export default function JoinPage() {
     event.preventDefault();
     setSubmitError(null);
 
+    // Honeypot trap: if filled, silently reject (bots fill hidden fields)
+    if (honeypot) {
+      return;
+    }
+
+    // Client-side rate limiting: 5s cooldown between submissions
+    const now = Date.now();
+    if (now - lastSubmitTime < SUBMIT_COOLDOWN_MS) {
+      setSubmitError("Please wait a moment before trying again.");
+      return;
+    }
+
     const validationError = validateForm();
 
     if (validationError) {
@@ -119,6 +136,8 @@ export default function JoinPage() {
       setSubmitError("Join destination is not configured. Please contact support.");
       return;
     }
+
+    setLastSubmitTime(now);
 
     const joinURL = buildJoinWhatsAppURL(joinTarget, {
       business_name: form.business_name.trim(),
@@ -150,6 +169,17 @@ export default function JoinPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 rounded-3xl border border-slate/15 bg-white p-5 shadow-sm">
+          {/* Honeypot anti-spam: hidden from humans, auto-filled by bots */}
+          <input
+            type="text"
+            name="company_website"
+            value={honeypot}
+            onChange={(e) => setHoneypot(e.target.value)}
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            className="absolute -left-[9999px] h-0 w-0 overflow-hidden opacity-0"
+          />
           <div>
             <label htmlFor="business_name" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate">
               Business Name
