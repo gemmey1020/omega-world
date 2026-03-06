@@ -1,3 +1,4 @@
 **/node_modules/
 **/vendor/
 client/.env.local
+.playwright-cli/
