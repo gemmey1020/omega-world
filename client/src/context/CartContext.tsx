@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -173,6 +174,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<CartState>(createInitialCartState);
   const [pendingSwitch, setPendingSwitch] = useState<PendingSwitchState | null>(null);
   const [pendingSharedCart, setPendingSharedCart] = useState<SharedCartState | null>(null);
+  const hadItemsOnMountRef = useRef(state.items.length > 0);
 
   useEffect(() => {
     persistCart(state);
@@ -207,7 +209,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        if (state.items.length === 0) {
+        if (!hadItemsOnMountRef.current) {
           setState((previous) => ({
             ...previous,
             vendor_id: sharedCart.vendor_id,
@@ -232,7 +234,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [state.items.length]);
+  }, []);
 
   const clearCart = useCallback(() => {
     setState((previous) => ({

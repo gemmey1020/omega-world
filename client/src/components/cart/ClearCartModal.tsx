@@ -47,13 +47,13 @@ export default function ClearCartModal({
             <p className="mt-2 text-sm text-muted">{message}</p>
 
             <div className="mt-5 flex flex-col gap-5">
-              <button
+              <PrimaryButton
                 type="button"
                 onClick={onKeepCart}
-                className="min-h-14 flex-1 rounded-[var(--radius-secondary)] border border-slate/20 px-3 py-2.5 text-sm font-medium text-navy transition hover:border-slate/40"
+                className="w-full border border-slate/20 bg-white text-navy hover:bg-slate/10"
               >
                 Keep Cart
-              </button>
+              </PrimaryButton>
 
               <PrimaryButton
                 type="button"

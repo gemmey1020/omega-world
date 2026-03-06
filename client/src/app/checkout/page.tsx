@@ -12,7 +12,6 @@ import { buildWhatsAppCheckoutURL } from "@/lib/whatsapp";
 export default function CheckoutPage() {
   const {
     bundles,
-    activeBundleIndex,
     startBatchHandoff,
     advanceHandoff,
     skipBundle,
@@ -27,12 +26,20 @@ export default function CheckoutPage() {
 
   const progress = useMemo(() => {
     const sentCount = bundles.filter((bundle) => bundle.status === "sent").length;
+    const totalCount = bundles.length;
+    const percentage = totalCount > 0 ? Math.round((sentCount / totalCount) * 100) : 0;
 
     return {
       sentCount,
-      totalCount: bundles.length,
+      totalCount,
+      percentage,
     };
   }, [bundles]);
+
+  const firstPendingIndex = useMemo(
+    () => bundles.findIndex((bundle) => bundle.status === "pending"),
+    [bundles],
+  );
 
   function handleSendBundle(index: number): void {
     const bundle = bundles[index];
@@ -93,8 +100,17 @@ export default function CheckoutPage() {
             <p className="mt-1 text-sm text-muted">Send each vendor order one-by-one to keep checkout isolated.</p>
           </div>
 
-          <div className="rounded-[var(--radius-secondary)] bg-slate/10 px-4 py-3 text-sm text-navy">
-            Progress: <span className="font-semibold">{progress.sentCount}</span> of <span className="font-semibold">{progress.totalCount}</span> sent
+          <div className="space-interactive-y rounded-[var(--radius-secondary)] bg-slate/10 px-4 py-3 text-sm text-navy">
+            <p>
+              Progress: <span className="font-semibold">{progress.sentCount}</span> of{" "}
+              <span className="font-semibold">{progress.totalCount}</span> orders sent
+            </p>
+            <div className="h-3 w-full overflow-hidden rounded-full bg-slate/20">
+              <div
+                className="h-full rounded-full bg-emerald transition-all duration-300"
+                style={{ width: `${progress.percentage}%` }}
+              />
+            </div>
           </div>
 
           <PrimaryButton
@@ -111,14 +127,14 @@ export default function CheckoutPage() {
           {bundles.map((bundle, index) => {
             const itemCount = bundle.items.reduce((sum, item) => sum + item.quantity, 0);
             const total = bundle.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const isActive = index === activeBundleIndex && bundle.status === "pending";
+            const isActionable = index === firstPendingIndex && bundle.status === "pending";
             const isPendingConfirmation = pendingConfirmationIndex === index;
 
             return (
               <article
                 key={`${bundle.vendor_id}-${index}`}
                 className={`rounded-[var(--radius-primary)] border bg-white p-5 ${
-                  isActive ? "border-laser/60 shadow-md" : "border-slate/20"
+                  isActionable ? "border-laser/60 shadow-md" : "border-slate/20"
                 }`}
               >
                 <div className="mb-5 flex items-start justify-between gap-5">
@@ -135,7 +151,7 @@ export default function CheckoutPage() {
                         ? "bg-emerald/20 text-emerald"
                         : bundle.status === "skipped"
                           ? "bg-red-100 text-red-700"
-                          : isActive
+                          : isActionable
                             ? "bg-laser/15 text-laser"
                             : "bg-slate/15 text-muted"
                     }`}
@@ -144,7 +160,7 @@ export default function CheckoutPage() {
                       ? "Sent"
                       : bundle.status === "skipped"
                         ? "Skipped"
-                        : isActive
+                        : isActionable
                           ? "Ready"
                           : "Queued"}
                   </span>
@@ -155,7 +171,7 @@ export default function CheckoutPage() {
                     <OrangeLaserButton
                       type="button"
                       onClick={() => handleSendBundle(index)}
-                      disabled={!isActive}
+                      disabled={!isActionable}
                       className="w-full"
                     >
                       Send on WhatsApp
@@ -172,17 +188,18 @@ export default function CheckoutPage() {
                       </PrimaryButton>
                     ) : null}
 
-                    <button
+                    <PrimaryButton
                       type="button"
                       onClick={() => {
                         skipBundle(index);
                         setPendingConfirmationIndex(null);
                       }}
-                      className="flex min-h-14 w-full items-center justify-center rounded-[var(--radius-secondary)] border border-slate/20 px-4 py-3 text-sm font-semibold text-muted transition hover:border-slate/40"
+                      disabled={!isActionable}
+                      className="w-full border border-slate/25 bg-white text-navy hover:bg-slate/10 disabled:bg-slate/10 disabled:text-muted"
                     >
                       <SkipForward className="mr-2 h-4 w-4" />
                       Skip Bundle
-                    </button>
+                    </PrimaryButton>
                   </div>
                 ) : null}
               </article>
