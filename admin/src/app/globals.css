@@ -1,11 +1,13 @@
 @import 'tailwindcss';
 
 @theme {
-  /* OMEGA V3 Design System */
+  /* OMEGA V3 Design System - Crystal Cockpit */
   --color-navy: #0f172a;
   --color-slate: #475569;
   --color-emerald: #059669;
   --color-red: #dc2626;
+  --color-teal: #20B2AA;
+  --color-teal-neon: #00FFD1;
   
   /* Semantic Colors */
   --color-background: var(--color-navy);
@@ -17,6 +19,11 @@
   --color-success: var(--color-emerald);
   --color-error: var(--color-red);
   --color-info: #3b82f6;
+  --color-warning: var(--color-red);
+  
+  /* Interactive States */
+  --color-interactive: var(--color-teal);
+  --color-interactive-glow: var(--color-teal-neon);
   
   /* Radii */
   --radius-primary: 18px;
@@ -24,6 +31,9 @@
   --radius-sm: var(--radius-secondary);
   --radius-md: var(--radius-primary);
   --radius-lg: 24px;
+  
+  /* Touch Targets */
+  --height-touch: 56px;
   
   /* Font System */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
