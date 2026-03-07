@@ -1,0 +1,209 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e147]:
+    - banner [ref=e148]:
+      - 'heading "Local Heliopolis Market #1" [level=1] [ref=e149]'
+      - paragraph [ref=e150]: Fruits
+      - paragraph [ref=e151]: Checkout available
+    - main [ref=e152]:
+      - generic [ref=e153]:
+        - heading "Vegetables" [level=2] [ref=e154]
+        - generic [ref=e155]:
+          - article [ref=e156]:
+            - generic [ref=e157]:
+              - generic [ref=e158]:
+                - 'heading "Product 1: Standard Marketplace Item" [level=3] [ref=e159]'
+                - paragraph [ref=e160]: EGP 1141.15
+              - button "Add" [ref=e161]
+          - article [ref=e162]:
+            - generic [ref=e163]:
+              - generic [ref=e164]:
+                - 'heading "Product 2: Standard Marketplace Item" [level=3] [ref=e165]'
+                - paragraph [ref=e166]: EGP 129.70
+              - button "Add" [ref=e167]
+          - article [ref=e168]:
+            - generic [ref=e169]:
+              - generic [ref=e170]:
+                - 'heading "Product 3: Standard Marketplace Item" [level=3] [ref=e171]'
+                - paragraph [ref=e172]: EGP 203.59
+              - button "Add" [ref=e173]
+          - article [ref=e174]:
+            - generic [ref=e175]:
+              - generic [ref=e176]:
+                - 'heading "Product 4: Standard Marketplace Item" [level=3] [ref=e177]'
+                - paragraph [ref=e178]: EGP 741.95
+              - button "Add" [ref=e179]
+          - article [ref=e180]:
+            - generic [ref=e181]:
+              - generic [ref=e182]:
+                - 'heading "Product 5: Extra long title with specialized naming convention to stress the V3.1 text-clamping and dead-zone layout" [level=3] [ref=e183]'
+                - paragraph [ref=e184]: EGP 1189.36
+              - button "Add" [ref=e185]
+          - article [ref=e186]:
+            - generic [ref=e187]:
+              - generic [ref=e188]:
+                - 'heading "Product 6: Standard Marketplace Item" [level=3] [ref=e189]'
+                - paragraph [ref=e190]: EGP 1010.45
+              - button "Add" [ref=e191]
+          - article [ref=e192]:
+            - generic [ref=e193]:
+              - generic [ref=e194]:
+                - 'heading "Product 7: Standard Marketplace Item" [level=3] [ref=e195]'
+                - paragraph [ref=e196]: EGP 1475.11
+              - button "Add" [ref=e197]
+          - article [ref=e198]:
+            - generic [ref=e199]:
+              - generic [ref=e200]:
+                - 'heading "Product 8: Standard Marketplace Item" [level=3] [ref=e201]'
+                - paragraph [ref=e202]: EGP 1300.55
+              - button "Add" [ref=e203]
+          - article [ref=e204]:
+            - generic [ref=e205]:
+              - generic [ref=e206]:
+                - 'heading "Product 9: Standard Marketplace Item" [level=3] [ref=e207]'
+                - paragraph [ref=e208]: EGP 1349.11
+              - button "Add" [ref=e209]
+          - article [ref=e210]:
+            - generic [ref=e211]:
+              - generic [ref=e212]:
+                - 'heading "Product 10: Extra long title with specialized naming convention to stress the V3.1 text-clamping and dead-zone layout" [level=3] [ref=e213]'
+                - paragraph [ref=e214]: EGP 1300.92
+              - button "Add" [ref=e215]
+          - article [ref=e216]:
+            - generic [ref=e217]:
+              - generic [ref=e218]:
+                - 'heading "Product 11: Standard Marketplace Item" [level=3] [ref=e219]'
+                - paragraph [ref=e220]: EGP 1136.57
+              - button "Add" [ref=e221]
+          - article [ref=e222]:
+            - generic [ref=e223]:
+              - generic [ref=e224]:
+                - 'heading "Product 12: Standard Marketplace Item" [level=3] [ref=e225]'
+                - paragraph [ref=e226]: EGP 274.71
+              - button "Add" [ref=e227]
+          - article [ref=e228]:
+            - generic [ref=e229]:
+              - generic [ref=e230]:
+                - 'heading "Product 13: Standard Marketplace Item" [level=3] [ref=e231]'
+                - paragraph [ref=e232]: EGP 843.14
+              - button "Add" [ref=e233]
+          - article [ref=e234]:
+            - generic [ref=e235]:
+              - generic [ref=e236]:
+                - 'heading "Product 14: Standard Marketplace Item" [level=3] [ref=e237]'
+                - paragraph [ref=e238]: EGP 166.11
+              - button "Add" [ref=e239]
+          - article [ref=e240]:
+            - generic [ref=e241]:
+              - generic [ref=e242]:
+                - 'heading "Product 15: Extra long title with specialized naming convention to stress the V3.1 text-clamping and dead-zone layout" [level=3] [ref=e243]'
+                - paragraph [ref=e244]: EGP 1047.34
+              - button "Add" [ref=e245]
+          - article [ref=e246]:
+            - generic [ref=e247]:
+              - generic [ref=e248]:
+                - 'heading "Product 16: Standard Marketplace Item" [level=3] [ref=e249]'
+                - paragraph [ref=e250]: EGP 122.78
+              - button "Add" [ref=e251]
+          - article [ref=e252]:
+            - generic [ref=e253]:
+              - generic [ref=e254]:
+                - 'heading "Product 17: Standard Marketplace Item" [level=3] [ref=e255]'
+                - paragraph [ref=e256]: EGP 1071.54
+              - button "Add" [ref=e257]
+          - article [ref=e258]:
+            - generic [ref=e259]:
+              - generic [ref=e260]:
+                - 'heading "Product 18: Standard Marketplace Item" [level=3] [ref=e261]'
+                - paragraph [ref=e262]: EGP 271.27
+              - button "Add" [ref=e263]
+          - article [ref=e264]:
+            - generic [ref=e265]:
+              - generic [ref=e266]:
+                - 'heading "Product 19: Standard Marketplace Item" [level=3] [ref=e267]'
+                - paragraph [ref=e268]: EGP 596.86
+              - button "Add" [ref=e269]
+          - article [ref=e270]:
+            - generic [ref=e271]:
+              - generic [ref=e272]:
+                - 'heading "Product 20: Extra long title with specialized naming convention to stress the V3.1 text-clamping and dead-zone layout" [level=3] [ref=e273]'
+                - paragraph [ref=e274]: EGP 401.33
+              - button "Add" [ref=e275]
+          - article [ref=e276]:
+            - generic [ref=e277]:
+              - generic [ref=e278]:
+                - 'heading "Product 21: Standard Marketplace Item" [level=3] [ref=e279]'
+                - paragraph [ref=e280]: EGP 56.70
+              - button "Add" [ref=e281]
+          - article [ref=e282]:
+            - generic [ref=e283]:
+              - generic [ref=e284]:
+                - 'heading "Product 22: Standard Marketplace Item" [level=3] [ref=e285]'
+                - paragraph [ref=e286]: EGP 780.54
+              - button "Add" [ref=e287]
+          - article [ref=e288]:
+            - generic [ref=e289]:
+              - generic [ref=e290]:
+                - 'heading "Product 23: Standard Marketplace Item" [level=3] [ref=e291]'
+                - paragraph [ref=e292]: EGP 850.29
+              - button "Add" [ref=e293]
+          - article [ref=e294]:
+            - generic [ref=e295]:
+              - generic [ref=e296]:
+                - 'heading "Product 24: Standard Marketplace Item" [level=3] [ref=e297]'
+                - paragraph [ref=e298]: EGP 157.33
+              - button "Add" [ref=e299]
+          - article [ref=e300]:
+            - generic [ref=e301]:
+              - generic [ref=e302]:
+                - 'heading "Product 25: Extra long title with specialized naming convention to stress the V3.1 text-clamping and dead-zone layout" [level=3] [ref=e303]'
+                - paragraph [ref=e304]: EGP 893.93
+              - button "Add" [ref=e305]
+          - article [ref=e306]:
+            - generic [ref=e307]:
+              - generic [ref=e308]:
+                - 'heading "Product 26: Standard Marketplace Item" [level=3] [ref=e309]'
+                - paragraph [ref=e310]: EGP 1115.13
+              - button "Add" [ref=e311]
+          - article [ref=e312]:
+            - generic [ref=e313]:
+              - generic [ref=e314]:
+                - 'heading "Product 27: Standard Marketplace Item" [level=3] [ref=e315]'
+                - paragraph [ref=e316]: EGP 1371.81
+              - button "Add" [ref=e317]
+          - article [ref=e318]:
+            - generic [ref=e319]:
+              - generic [ref=e320]:
+                - 'heading "Product 28: Standard Marketplace Item" [level=3] [ref=e321]'
+                - paragraph [ref=e322]: EGP 682.75
+              - button "Add" [ref=e323]
+          - article [ref=e324]:
+            - generic [ref=e325]:
+              - generic [ref=e326]:
+                - 'heading "Product 29: Standard Marketplace Item" [level=3] [ref=e327]'
+                - paragraph [ref=e328]: EGP 255.93
+              - button "Add" [ref=e329]
+          - article [ref=e330]:
+            - generic [ref=e331]:
+              - generic [ref=e332]:
+                - 'heading "Product 30: Extra long title with specialized naming convention to stress the V3.1 text-clamping and dead-zone layout" [level=3] [ref=e333]'
+                - paragraph [ref=e334]: EGP 879.85
+              - button "Add" [ref=e335]
+      - generic [ref=e336]:
+        - paragraph [ref=e337]: Showing 30 of 360 products.
+        - button "Load More Products" [ref=e338]
+    - contentinfo [ref=e339]:
+      - generic [ref=e340]:
+        - generic [ref=e341]:
+          - img [ref=e342]
+          - generic [ref=e346]: 0 item(s)
+        - generic [ref=e347]: EGP 0.00
+      - generic [ref=e348]:
+        - button "Checkout on WhatsApp" [disabled] [ref=e349]
+        - button "Stage Cart For Batch Checkout" [disabled] [ref=e350]:
+          - img [ref=e351]
+          - text: Stage Cart For Batch Checkout
+        - link "Open Batch Checkout (0)" [ref=e355] [cursor=pointer]:
+          - /url: /checkout
+  - button "Open Next.js Dev Tools" [ref=e22] [cursor=pointer]:
+    - img [ref=e23]
+  - alert [ref=e34]: "Local Heliopolis Market #1 | OMEGA World"

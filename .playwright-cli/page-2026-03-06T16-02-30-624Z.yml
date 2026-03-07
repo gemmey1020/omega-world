@@ -1,0 +1,241 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic:
+      - link "Skip to content" [ref=e4] [cursor=pointer]:
+        - /url: "#content-wrapper"
+      - banner [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e8]:
+            - button [ref=e9] [cursor=pointer]:
+              - img [ref=e11]
+            - option "Azərbaycan"
+            - option "Afrikaans"
+            - option "Bahasa Indonesia"
+            - option "Melayu"
+            - option "Català"
+            - option "čeština"
+            - option "Dansk"
+            - option "Deutsch"
+            - option "Eesti"
+            - option "English" [selected]
+            - option "Español"
+            - option "Français"
+            - option "Gaeilge"
+            - option "Hrvatski"
+            - option "Italiano"
+            - option "Kiswahili"
+            - option "Latviešu"
+            - option "Lietuvių"
+            - option "Magyar"
+            - option "Nederlands"
+            - option "Norsk bokmål"
+            - option "O‘zbek"
+            - option "Filipino"
+            - option "Polski"
+            - option "Português (Brasil)"
+            - option "Português (Portugal)"
+            - option "Română"
+            - option "Shqip"
+            - option "Slovenčina"
+            - option "Slovenščina"
+            - option "Suomi"
+            - option "Svenska"
+            - option "Tiếng Việt"
+            - option "Türkçe"
+            - option "Ελληνικά"
+            - option "български"
+            - option "қазақ тілі"
+            - option "македонски"
+            - option "русский"
+            - option "српски"
+            - option "українська"
+            - option "עברית"
+            - option "العربية"
+            - option "فارسی"
+            - option "اردو"
+            - option "বাংলা"
+            - option "हिन्दी"
+            - option "ગુજરાતી"
+            - option "ಕನ್ನಡ"
+            - option "मराठी"
+            - option "ਪੰਜਾਬੀ"
+            - option "தமிழ்"
+            - option "తెలుగు"
+            - option "മലയാളം"
+            - option "ไทย"
+            - option "简体中文"
+            - option "繁體中文（台灣）"
+            - option "繁體中文（香港）"
+            - option "日本語"
+            - option "한국어"
+          - link "WhatsApp's homepage" [ref=e13] [cursor=pointer]:
+            - /url: https://www.whatsapp.com/
+            - img "WhatsApp Main Page" [ref=e15]
+          - link "Download" [ref=e17] [cursor=pointer]:
+            - /url: https://www.whatsapp.com/dl
+            - img [ref=e18]
+    - generic [ref=e27]:
+      - heading "Chat on WhatsApp with +20 12 30533724" [level=2] [ref=e29]:
+        - paragraph [ref=e30]: Chat on WhatsApp with +20 12 30533724
+      - paragraph [ref=e34]: "Order Request - Local Heliopolis Market #1 Device Hash: 10124473-e6bd-45e3-98d9-f8fc5384a900 Items: - Product 2: Standard Marketplace Item x1 = EGP 129.70 - Product 3: Standard Marketplace Item x1 = EGP 203.59 Total: EGP 333.29 Share this cart: http://localhost:3000/vendors/11?cart_token=ZXlKcGRpSTZJblJNV2xWV1NFNVhlRFZqTUZOUmFuZG5hV0ZEVDJjOVBTSXNJblpoYkhWbElqb2lZMjFHZEZObmJTOXFZa2xLVldwelVHMHJPVzVqTVhaQ1VtSnlibGRNT1RSQ1VIbHVURGhXTkZGQ1VEQlhTREZNV1ZwbVZrWmtPWGRtY0RseWJHVXdaSE4wVkdZM2IzUXpUa2RwYUdGWU16a3dNM05hZFdOSGFYSlBja041VnpCSVdtMHZXVWM0Ym5KdFQzaDZNMXBLT1VkbFFVMTJPR2R6TW5WTlNHd3ZWa0ZCT0hRdlYxYzFTamgzYjJWVFRrcElWbWhwUzJsVk5XNVVZVFJ3UVVwRlRVaDZLMVZaYVhWTmJFazVhSFpUUjJsc1RDdFRRVGRFU1Zob1psRnpaamN5SzAxNWRteDNMMEV5WnpNMFJsUTNSR0p5ZG1OR1NETTJRM050WlRnNU1uQXhOR2x1ZHpCeGVUQmllRk00TDA5M056VldTRUp1VldKdU0wSjZZVXhVTWl0b1RYWjJRbU13TUZCSE9WUXJTWGQxWTJFd09UZFpVSG93Tmk5c2NsTjZXVmRGY3k5dWJrRlZhVFpOYVZwTWREVjFjbkZ1UkVSUGNVcENjakZxY0VOMFEzUTFORGsxUmpGVmNEWlJZV3g2UldabWVrb3dNMVZHYjBkRWJtTXpNbTV6Yldzd2VrOHhhWEZpUVhsSmQzTndVR2xxUW01d05uQnFXRGgzYlhReVQyaGxja1JSV0ZkQ1ltVklWeTloWjJSdVJtc3haelZKV25KQ1NFWTVTRXh3WnpselRtcGFRMlIyUVdKRlJ6bDRlVUV3VVdkd1dreExaVGxwV2xKelFtMHdXVWc0TXpCTWRsUlJOVWt5YTA5cGFqWXlhbWwzVWpWVVNIVkVVVTVyUkdwNk9IRjFZVGQxYTFwRVFub3liMlZYYVZoWWNEVTRUemxQWTBKUGVqQm1ZekpLZG5oQ2FtOWhWQ3RDYXpkMFVHMUNRVGhIWWtORlduVk5OM0kxZVV4dE1GRlRjSFpLUzNaa1NFZDBhWE15U3pkTU5IRmxabWhKYlc0dldURmljMmgxVFRVdk1XbExZamRMU25wVWFFOUlWMVI2U1dObVpqaEpTMXBKVG5OUFIwMVdiRWw1U1ZaclZ6WkliazR6WlZwRk5reEdjakZCWjNFNFNVUnBjV1kzWVRCRFVYbFpWSGhIWm1kcE16aFdWRzRyUTFkMGNIY3hkM2xqZERCWE1GZExUM05HU0VvNVFsUnZhSEJCVkZsTlpsaEVTMnBFYUdKMlUxTnRSbU5RV25kNVZIRlJWbTlrVW1OcGFGbE5aMlJpSzJkQlBUMGlMQ0p0WVdNaU9pSTJZakV6TVROa1pqQTNaREEzWXpZMk5qTmpPVGsyWmpaak4yVTVNRE5rWkRJMU1URXdPR0prTnpFM1kyRmxaall5T1dGaFptTmtOR1l4TmpNeE1HUXdJaXdpZEdGbklqb2lJbjA9"
+      - generic [ref=e35]:
+        - link "Download WhatsApp" [ref=e36] [cursor=pointer]:
+          - /url: https://www.whatsapp.com/download
+          - generic [ref=e37]: Open app
+        - generic [ref=e38]:
+          - img [ref=e40]
+          - heading "Don't have the app?" [level=4] [ref=e43]
+          - heading "Download it now" [level=4] [ref=e44]:
+            - link "Download it now" [ref=e45] [cursor=pointer]:
+              - /url: https://www.whatsapp.com/dl?wame_funnel=1
+  - contentinfo [ref=e48]:
+    - generic [ref=e49]:
+      - link "Download" [ref=e51] [cursor=pointer]:
+        - /url: https://www.whatsapp.com/dl
+        - generic [ref=e52]: Download
+        - img [ref=e54]
+      - generic [ref=e57]:
+        - link "Twitter" [ref=e58] [cursor=pointer]:
+          - /url: https://x.com/whatsapp
+          - img [ref=e59]
+        - link "Youtube" [ref=e61] [cursor=pointer]:
+          - /url: https://www.youtube.com/channel/UCAuerig2N-RZWJT8x75V9yw
+          - img [ref=e62]
+        - link "Instagram" [ref=e64] [cursor=pointer]:
+          - /url: https://www.instagram.com/whatsapp/?hl=en
+          - img [ref=e65]
+        - link "Facebook" [ref=e67] [cursor=pointer]:
+          - /url: https://www.facebook.com/profile.php?id=100064758844406
+          - img [ref=e68]
+    - generic [ref=e70]:
+      - link "WhatsApp's homepage" [ref=e72] [cursor=pointer]:
+        - /url: https://www.whatsapp.com/
+        - img "WhatsApp Main Logo" [ref=e74]
+      - generic [ref=e75]:
+        - generic [ref=e76]:
+          - heading "What we do" [level=4] [ref=e79]
+          - link "Features" [ref=e80] [cursor=pointer]:
+            - /url: https://www.whatsapp.com/calling
+            - generic [ref=e82]: Features
+          - link "WhatsApp Blogs for our latest announcements" [ref=e83] [cursor=pointer]:
+            - /url: https://blog.whatsapp.com/
+            - generic [ref=e85]: Blog
+          - link "WhatsApp's security features" [ref=e86] [cursor=pointer]:
+            - /url: https://www.whatsapp.com/security
+            - generic [ref=e88]: Security
+          - link "WhatsApp for Business homepage" [ref=e89] [cursor=pointer]:
+            - /url: https://business.whatsapp.com/
+            - generic [ref=e91]: For Business
+        - generic [ref=e92]:
+          - heading "Who we are" [level=4] [ref=e95]
+          - link "WhatsApp's mission statement" [ref=e96] [cursor=pointer]:
+            - /url: https://www.whatsapp.com/about
+            - generic [ref=e98]: About us
+          - link "Careers" [ref=e99] [cursor=pointer]:
+            - /url: https://www.metacareers.com/jobs?divisions[0]=WhatsApp
+            - generic [ref=e101]: Careers
+          - link "Visit WhatsApp's brand center" [ref=e102] [cursor=pointer]:
+            - /url: https://www.facebook.com/brand/resources/whatsapp/whatsapp-brand
+            - generic [ref=e104]: Brand Center
+          - link "WhatsApp's privacy features" [ref=e105] [cursor=pointer]:
+            - /url: https://www.whatsapp.com/privacy
+            - generic [ref=e107]: Privacy
+        - generic [ref=e108]:
+          - heading "Use WhatsApp" [level=4] [ref=e111]
+          - link "Download WhatsApp for Android" [ref=e112] [cursor=pointer]:
+            - /url: https://www.whatsapp.com/android
+            - generic [ref=e114]: Android
+          - link "Download WhatsApp" [ref=e115] [cursor=pointer]:
+            - /url: https://www.whatsapp.com/download
+            - generic [ref=e117]: iPhone
+          - link "Download WhatsApp" [ref=e118] [cursor=pointer]:
+            - /url: https://www.whatsapp.com/download
+            - generic [ref=e120]: Mac/PC
+          - link "Login to WhatsApp Web" [ref=e121] [cursor=pointer]:
+            - /url: https://web.whatsapp.com/
+            - generic [ref=e123]: WhatsApp Web
+        - generic [ref=e124]:
+          - heading "Need help?" [level=4] [ref=e127]
+          - link "Get WhatsApp support" [ref=e128] [cursor=pointer]:
+            - /url: https://www.whatsapp.com/contact
+            - generic [ref=e130]: Contact Us
+          - link "WhatsApp Help Center homepage" [ref=e131] [cursor=pointer]:
+            - /url: https://faq.whatsapp.com/
+            - generic [ref=e133]: Help Center
+          - link "Download WhatsApp" [ref=e134] [cursor=pointer]:
+            - /url: https://www.whatsapp.com/download
+            - generic [ref=e136]: Apps
+          - link "WhatsApp's latest security advisories" [ref=e137] [cursor=pointer]:
+            - /url: https://www.whatsapp.com/security/advisories
+            - generic [ref=e139]: Security Advisories
+    - generic [ref=e141]:
+      - generic [ref=e143]:
+        - paragraph [ref=e145]: 2026 © WhatsApp LLC
+        - link "WhatsApp legal policies" [ref=e146] [cursor=pointer]:
+          - /url: https://www.whatsapp.com/legal/
+          - generic [ref=e148]: Terms & Privacy Policy
+        - link "Sitemap" [ref=e150] [cursor=pointer]:
+          - /url: https://www.whatsapp.com/sitemap
+      - generic [ref=e153]:
+        - listbox "Select your preferred language" [ref=e154]:
+          - option "Azərbaycan"
+          - option "Afrikaans"
+          - option "Bahasa Indonesia"
+          - option "Melayu"
+          - option "Català"
+          - option "čeština"
+          - option "Dansk"
+          - option "Deutsch"
+          - option "Eesti"
+          - option "English" [selected]
+          - option "Español"
+          - option "Français"
+          - option "Gaeilge"
+          - option "Hrvatski"
+          - option "Italiano"
+          - option "Kiswahili"
+          - option "Latviešu"
+          - option "Lietuvių"
+          - option "Magyar"
+          - option "Nederlands"
+          - option "Norsk bokmål"
+          - option "O‘zbek"
+          - option "Filipino"
+          - option "Polski"
+          - option "Português (Brasil)"
+          - option "Português (Portugal)"
+          - option "Română"
+          - option "Shqip"
+          - option "Slovenčina"
+          - option "Slovenščina"
+          - option "Suomi"
+          - option "Svenska"
+          - option "Tiếng Việt"
+          - option "Türkçe"
+          - option "Ελληνικά"
+          - option "български"
+          - option "қазақ тілі"
+          - option "македонски"
+          - option "русский"
+          - option "српски"
+          - option "українська"
+          - option "עברית"
+          - option "العربية"
+          - option "فارسی"
+          - option "اردو"
+          - option "বাংলা"
+          - option "हिन्दी"
+          - option "ગુજરાતી"
+          - option "ಕನ್ನಡ"
+          - option "मराठी"
+          - option "ਪੰਜਾਬੀ"
+          - option "தமிழ்"
+          - option "తెలుగు"
+          - option "മലയാളം"
+          - option "ไทย"
+          - option "简体中文"
+          - option "繁體中文（台灣）"
+          - option "繁體中文（香港）"
+          - option "日本語"
+          - option "한국어"
+        - img [ref=e155]
