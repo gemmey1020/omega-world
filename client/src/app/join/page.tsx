@@ -2,10 +2,11 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { ShieldCheck } from "lucide-react";
+import PrimaryButton from "@/components/ui/PrimaryButton";
 import { useZone } from "@/hooks/useZone";
 import { useScarcityCounter } from "@/hooks/useScarcityCounter";
-import { getZones } from "@/lib/api";
-import { buildJoinWhatsAppURL } from "@/lib/whatsapp";
+import { createJoinSession, getZones, submitJoinLead } from "@/lib/api";
+import { getDeviceHash } from "@/lib/device";
 import type { ZoneAPI } from "@/types/zone";
 
 interface JoinFormState {
@@ -15,8 +16,7 @@ interface JoinFormState {
   zone_id: string;
 }
 
-// Strict Egyptian mobile: +20 followed by 1 (mobile prefix) then 9 digits
-const EGYPT_MOBILE_PATTERN = /^\+201[0-9]\d{8}$/;
+const EGYPT_MOBILE_PATTERN = /^\+20(?:10|11|12|15)\d{8}$/;
 const SUBMIT_COOLDOWN_MS = 5000;
 
 export default function JoinPage() {
@@ -24,6 +24,7 @@ export default function JoinPage() {
   const { remainingSeats, decrement } = useScarcityCounter();
   const [zones, setZones] = useState<ZoneAPI[]>([]);
   const [loadingZones, setLoadingZones] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [lastSubmitTime, setLastSubmitTime] = useState(0);
   // Honeypot: invisible field that bots will auto-fill
@@ -70,6 +71,26 @@ export default function JoinPage() {
     };
   }, [activeZone]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function initializeJoinSession() {
+      try {
+        await createJoinSession();
+      } catch (error) {
+        if (isMounted) {
+          setSubmitError(error instanceof Error ? error.message : "Unable to initialize secure join session.");
+        }
+      }
+    }
+
+    void initializeJoinSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const selectedZoneName = useMemo(() => {
     if (activeZone) {
       return activeZone.name;
@@ -107,8 +128,13 @@ export default function JoinPage() {
     return null;
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>): void {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
+
+    if (submitting) {
+      return;
+    }
+
     setSubmitError(null);
 
     // Honeypot trap: if filled, silently reject (bots fill hidden fields)
@@ -130,24 +156,26 @@ export default function JoinPage() {
       return;
     }
 
-    const joinTarget = process.env.NEXT_PUBLIC_JOIN_WHATSAPP_NUMBER;
-
-    if (!joinTarget) {
-      setSubmitError("Join destination is not configured. Please contact support.");
-      return;
-    }
-
     setLastSubmitTime(now);
+    setSubmitting(true);
 
-    const joinURL = buildJoinWhatsAppURL(joinTarget, {
-      business_name: form.business_name.trim(),
-      owner_name: form.owner_name.trim(),
-      whatsapp_number: form.whatsapp_number.trim(),
-      zone_name: selectedZoneName,
-    });
+    try {
+      const redirectUrl = await submitJoinLead({
+        business_name: form.business_name.trim(),
+        owner_name: form.owner_name.trim(),
+        whatsapp_number: form.whatsapp_number.trim(),
+        zone_id: Number(form.zone_id),
+        device_hash: getDeviceHash(),
+        company_website: honeypot,
+      });
 
-    decrement();
-    window.location.href = joinURL;
+      decrement();
+      window.location.assign(redirectUrl);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Unable to submit your join request.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -158,7 +186,7 @@ export default function JoinPage() {
             <ShieldCheck className="h-6 w-6 text-emerald" />
           </div>
           <h1 className="text-3xl font-bold text-navy">Join the OMEGA Family</h1>
-          <p className="mt-2 text-sm text-slate">
+          <p className="mt-2 text-sm text-muted">
             Start your hyper-local digital storefront and reach nearby customers.
           </p>
         </div>
@@ -168,7 +196,7 @@ export default function JoinPage() {
           <p className="mt-1 text-2xl font-bold text-navy">Only {remainingSeats} seats left</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 rounded-3xl border border-slate/15 bg-white p-5 shadow-sm">
+        <form onSubmit={handleSubmit} className="space-interactive-y rounded-3xl border border-slate/15 bg-white p-5 shadow-sm">
           {/* Honeypot anti-spam: hidden from humans, auto-filled by bots */}
           <input
             type="text"
@@ -181,7 +209,7 @@ export default function JoinPage() {
             className="absolute -left-[9999px] h-0 w-0 overflow-hidden opacity-0"
           />
           <div>
-            <label htmlFor="business_name" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate">
+            <label htmlFor="business_name" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted">
               Business Name
             </label>
             <input
@@ -195,7 +223,7 @@ export default function JoinPage() {
           </div>
 
           <div>
-            <label htmlFor="owner_name" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate">
+            <label htmlFor="owner_name" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted">
               Owner Name
             </label>
             <input
@@ -209,7 +237,7 @@ export default function JoinPage() {
           </div>
 
           <div>
-            <label htmlFor="whatsapp_number" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate">
+            <label htmlFor="whatsapp_number" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted">
               WhatsApp Number
             </label>
             <input
@@ -224,7 +252,7 @@ export default function JoinPage() {
           </div>
 
           <div>
-            <label htmlFor="zone_id" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate">
+            <label htmlFor="zone_id" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted">
               Zone
             </label>
 
@@ -261,15 +289,16 @@ export default function JoinPage() {
             </p>
           ) : null}
 
-          <button
+          <PrimaryButton
             type="submit"
-            className="w-full rounded-xl bg-navy px-4 py-3 text-sm font-semibold text-white transition hover:bg-navy/90"
+            disabled={submitting}
+            className="w-full"
           >
-            Apply Now via WhatsApp
-          </button>
+            {submitting ? "Securing your application..." : "Apply Now via WhatsApp"}
+          </PrimaryButton>
         </form>
 
-        <p className="mt-6 text-center text-xs text-slate">
+        <p className="mt-6 text-center text-xs text-muted">
           Trusted by local vendors growing across secure OMEGA zones.
         </p>
       </div>

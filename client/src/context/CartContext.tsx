@@ -6,11 +6,13 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 import ClearCartModal from "@/components/cart/ClearCartModal";
 import { getDeviceHash } from "@/lib/device";
+import { resolveCartToken, type SharedCartState } from "@/lib/cart-token";
 import type { VendorAPI } from "@/types/vendor";
 
 export interface CartItem {
@@ -24,23 +26,27 @@ export interface CartItem {
 interface CartState {
   vendor_id: number | null;
   vendor_name: string | null;
+  vendor_whatsapp_number: string | null;
   items: CartItem[];
   device_hash: string;
 }
 
+type CartVendorRef = Pick<VendorAPI, "id" | "name" | "whatsapp_number">;
+
 interface PendingSwitchState {
-  vendor: Pick<VendorAPI, "id" | "name">;
+  vendor: CartVendorRef;
   item: CartItem;
 }
 
 interface PersistedCartState {
   vendor_id: number | null;
   vendor_name: string | null;
+  vendor_whatsapp_number: string | null;
   items: CartItem[];
 }
 
 interface CartContextValue extends CartState {
-  addItem: (vendor: Pick<VendorAPI, "id" | "name">, item: CartItem) => void;
+  addItem: (vendor: CartVendorRef, item: CartItem) => void;
   removeItem: (productId: number) => void;
   updateQuantity: (productId: number, quantity: number) => void;
   clearCart: () => void;
@@ -81,6 +87,7 @@ function parsePersistedCart(rawValue: string | null): PersistedCartState | null 
 
     const vendorId = parsed.vendor_id;
     const vendorName = parsed.vendor_name;
+    const vendorWhatsappNumber = parsed.vendor_whatsapp_number;
     const items = parsed.items;
 
     if (!(typeof vendorId === "number" || vendorId === null)) {
@@ -91,6 +98,10 @@ function parsePersistedCart(rawValue: string | null): PersistedCartState | null 
       return null;
     }
 
+    if (!(typeof vendorWhatsappNumber === "string" || vendorWhatsappNumber === null)) {
+      return null;
+    }
+
     if (!Array.isArray(items) || !items.every((item) => isCartItem(item))) {
       return null;
     }
@@ -98,6 +109,7 @@ function parsePersistedCart(rawValue: string | null): PersistedCartState | null 
     return {
       vendor_id: vendorId,
       vendor_name: vendorName,
+      vendor_whatsapp_number: vendorWhatsappNumber,
       items,
     };
   } catch {
@@ -118,6 +130,7 @@ function persistCart(state: CartState): void {
   const payload: PersistedCartState = {
     vendor_id: state.vendor_id,
     vendor_name: state.vendor_name,
+    vendor_whatsapp_number: state.vendor_whatsapp_number,
     items: state.items,
   };
 
@@ -129,6 +142,7 @@ function createInitialCartState(): CartState {
     return {
       vendor_id: null,
       vendor_name: null,
+      vendor_whatsapp_number: null,
       items: [],
       device_hash: "",
     };
@@ -141,6 +155,7 @@ function createInitialCartState(): CartState {
     return {
       vendor_id: stored.vendor_id,
       vendor_name: stored.vendor_name,
+      vendor_whatsapp_number: stored.vendor_whatsapp_number,
       items: stored.items,
       device_hash: deviceHash,
     };
@@ -149,6 +164,7 @@ function createInitialCartState(): CartState {
   return {
     vendor_id: null,
     vendor_name: null,
+    vendor_whatsapp_number: null,
     items: [],
     device_hash: deviceHash,
   };
@@ -157,22 +173,81 @@ function createInitialCartState(): CartState {
 export function CartProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<CartState>(createInitialCartState);
   const [pendingSwitch, setPendingSwitch] = useState<PendingSwitchState | null>(null);
+  const [pendingSharedCart, setPendingSharedCart] = useState<SharedCartState | null>(null);
+  const hadItemsOnMountRef = useRef(state.items.length > 0);
 
   useEffect(() => {
     persistCart(state);
   }, [state]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    const token = url.searchParams.get("cart_token") ?? "";
+
+    if (token === "") {
+      return;
+    }
+
+    let cancelled = false;
+
+    const clearTokenFromUrl = (): void => {
+      url.searchParams.delete("cart_token");
+      const query = url.searchParams.toString();
+      const nextPath = `${url.pathname}${query ? `?${query}` : ""}${url.hash}`;
+      window.history.replaceState({}, "", nextPath);
+    };
+
+    async function restoreSharedCart(): Promise<void> {
+      try {
+        const sharedCart = await resolveCartToken(token);
+
+        if (cancelled) {
+          return;
+        }
+
+        if (!hadItemsOnMountRef.current) {
+          setState((previous) => ({
+            ...previous,
+            vendor_id: sharedCart.vendor_id,
+            vendor_name: sharedCart.vendor_name,
+            vendor_whatsapp_number: null,
+            items: sharedCart.items.map((item) => ({ ...item })),
+          }));
+        } else {
+          setPendingSharedCart(sharedCart);
+        }
+      } catch {
+        // Ignore invalid/expired tokens and keep current cart state.
+      } finally {
+        if (!cancelled) {
+          clearTokenFromUrl();
+        }
+      }
+    }
+
+    void restoreSharedCart();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const clearCart = useCallback(() => {
     setState((previous) => ({
       ...previous,
       vendor_id: null,
       vendor_name: null,
+      vendor_whatsapp_number: null,
       items: [],
     }));
   }, []);
 
   const upsertItem = useCallback(
-    (vendor: Pick<VendorAPI, "id" | "name">, item: CartItem) => {
+    (vendor: CartVendorRef, item: CartItem) => {
       setState((previous) => {
         const existing = previous.items.find((cartItem) => cartItem.product_id === item.product_id);
 
@@ -192,6 +267,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           ...previous,
           vendor_id: vendor.id,
           vendor_name: vendor.name,
+          vendor_whatsapp_number: vendor.whatsapp_number,
           items: nextItems,
         };
       });
@@ -200,7 +276,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 
   const addItem = useCallback(
-    (vendor: Pick<VendorAPI, "id" | "name">, item: CartItem) => {
+    (vendor: CartVendorRef, item: CartItem) => {
       if (state.vendor_id !== null && state.vendor_id !== vendor.id) {
         setPendingSwitch({ vendor, item });
         return;
@@ -220,14 +296,35 @@ export function CartProvider({ children }: { children: ReactNode }) {
       ...previous,
       vendor_id: pendingSwitch.vendor.id,
       vendor_name: pendingSwitch.vendor.name,
+      vendor_whatsapp_number: pendingSwitch.vendor.whatsapp_number,
       items: [{ ...pendingSwitch.item, quantity: Math.max(1, pendingSwitch.item.quantity) }],
     }));
 
     setPendingSwitch(null);
   }, [pendingSwitch]);
 
+  const replaceWithSharedCart = useCallback(() => {
+    if (!pendingSharedCart) {
+      return;
+    }
+
+    setState((previous) => ({
+      ...previous,
+      vendor_id: pendingSharedCart.vendor_id,
+      vendor_name: pendingSharedCart.vendor_name,
+      vendor_whatsapp_number: null,
+      items: pendingSharedCart.items.map((item) => ({ ...item })),
+    }));
+
+    setPendingSharedCart(null);
+  }, [pendingSharedCart]);
+
   const dismissVendorSwitch = useCallback(() => {
     setPendingSwitch(null);
+  }, []);
+
+  const dismissSharedRecovery = useCallback(() => {
+    setPendingSharedCart(null);
   }, []);
 
   const removeItem = useCallback((productId: number) => {
@@ -239,6 +336,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         items: nextItems,
         vendor_id: nextItems.length > 0 ? previous.vendor_id : null,
         vendor_name: nextItems.length > 0 ? previous.vendor_name : null,
+        vendor_whatsapp_number: nextItems.length > 0 ? previous.vendor_whatsapp_number : null,
       };
     });
   }, []);
@@ -274,14 +372,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [state, addItem, removeItem, updateQuantity, clearCart, total],
   );
 
+  const isVendorSwitchModalOpen = pendingSwitch !== null;
+  const isSharedRecoveryModalOpen = pendingSharedCart !== null;
+
   return (
     <CartContext.Provider value={value}>
       {children}
+
       <ClearCartModal
-        isOpen={pendingSwitch !== null}
+        isOpen={isVendorSwitchModalOpen || isSharedRecoveryModalOpen}
+        mode={isSharedRecoveryModalOpen ? "shared-cart" : "vendor-switch"}
         vendorName={state.vendor_name}
-        onKeepCart={dismissVendorSwitch}
-        onClearAndSwitch={confirmVendorSwitch}
+        incomingVendorName={pendingSharedCart?.vendor_name ?? null}
+        onKeepCart={isSharedRecoveryModalOpen ? dismissSharedRecovery : dismissVendorSwitch}
+        onConfirmAction={isSharedRecoveryModalOpen ? replaceWithSharedCart : confirmVendorSwitch}
       />
     </CartContext.Provider>
   );

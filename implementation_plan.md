@@ -1,352 +1,264 @@
-# Phase 6: The Living Pulse & Lead Acquisition — Execution Blueprint
+# Phase 6.2: V3.1 "Impatience & Accessibility" Patch — Execution Blueprint
 
-> **Codex Execution Checklist.** Every item below is a discrete, auditable unit of work. No item may be skipped or reordered without Founder override.
+**Source of Truth:** CANON V3.0 + [OMEGA_WORLD_MASTER_DESIGN_SYSTEM_V3.md](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/OMEGA_WORLD_MASTER_DESIGN_SYSTEM_V3.md)
 
 ---
 
-## 1. API Integration Layer — Kill the Mocks
+## TASK 1: UI/UX Hardening
 
-### 1.1 Align Client Types to Live API Contracts
+### 1.1 The V3 Design Token Migration
 
 > [!IMPORTANT]
-> The current [Vendor](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/types/vendor.ts#13-26) interface in [src/types/vendor.ts](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/types/vendor.ts) has fields (`category_id`, `isOpenNow`, `offersFastDelivery`, `rating`, `delivery_time_mins`) that DO NOT exist in the live [VendorResource](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/api/app/Http/Resources/VendorResource.php). This is **Type Drift** and must be resolved first.
+> Current [globals.css](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/app/globals.css) uses V1 palette (`#0F172A` navy, `#fafafa` bg, Geist fonts). V3 mandates: `#1E293B` navy, `#F8FAFC` bg, system fonts, `18px/10px` radii, and the `omega-pulse` keyframe.
 
-**Live `GET /api/zones` response shape** (from [ZoneResource](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/api/app/Http/Resources/ZoneResource.php)):
-```typescript
-// src/types/zone.ts [NEW]
-interface ZoneAPI {
-  id: number;          // ← integer, NOT string
-  name: string;
-  coordinates: GeoJSON.Point | null;
+#### [MODIFY] [globals.css](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/app/globals.css)
+
+Replace the current theme block entirely with V3 tokens:
+
+```css
+@import "tailwindcss";
+
+@theme inline {
+  /* V3 Color Palette */
+  --color-omega-bg: #F8FAFC;
+  --color-omega-navy: #1E293B;
+  --color-omega-slate: #E2E8F0;
+  --color-omega-orange: #EA580C;
+  --color-omega-emerald: #10B981;
+  --color-omega-red: #DC2626;
+  --color-omega-grey: #9CA3AF;
+
+  /* Radii */
+  --radius-primary: 18px;
+  --radius-secondary: 10px;
+
+  /* Shadows */
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  --shadow-sticky: 0 -4px 12px -2px rgba(0, 0, 0, 0.15);
+
+  /* Spacing (Dead Zone) */
+  --space-dead-zone: 20px;
+  --space-gutter-mobile: 16px;
+  --space-gutter-desktop: 32px;
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Liberation Mono', monospace;
+}
+
+@keyframes omega-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); opacity: 1; }
+  50%  { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); opacity: 0.85; }
+  100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); opacity: 1; }
 }
 ```
 
-**Live `GET /api/vendors?zone_id={id}` response shape** (from [VendorResource](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/api/app/Http/Resources/VendorResource.php)):
+### 1.2 The 20px Dead Zone Shield
+
+All interactive element containers use `gap-5` (20px). This exceeds the V3 spec's 12px minimum to match the Grok adversarial feedback for "impatient tapping."
+
+- **Vendor card button areas:** `gap-5` between "Add to Cart" and adjacent elements
+- **Form field groups:** `space-y-5` on `/join` and all future forms
+- **Checkout bar:** 20px internal padding between price and checkout button
+
+**Enforcement:** No utility class override. Define a `gap-interactive` token in [globals.css](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/app/globals.css) mapped to `20px`.
+
+### 1.3 The Scrim Patch (Waiting States)
+
+Replace the V3 gradient overlay (`from-[#F8FAFC] to-[#E2E8F0] opacity-60`) with a high-visibility scrim:
+
+#### [MODIFY] [vendor-card.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/components/omega/vendor-card.tsx)
+
+```diff
+- <div className="absolute inset-0 bg-gradient-to-br from-[#F8FAFC] to-[#E2E8F0] opacity-60 ...">
+-   <motion.span>Waiting for Update</motion.span>
++ <div className="absolute inset-0 bg-[#E2E8F0]/70 flex flex-col items-center justify-center gap-2">
++   <Clock className="h-12 w-12 text-[#1E293B]" />
++   <motion.span animate={{ opacity: [1, 0.6, 1] }} transition={{ duration: 4, repeat: Infinity }}
++     className="text-[#1E293B] text-sm font-semibold">
++     Waiting for Update
++   </motion.span>
+```
+
+### 1.4 Haptic Utility
+
+#### [NEW] [src/lib/haptic.ts](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/lib/haptic.ts)
+
 ```typescript
-// src/types/vendor.ts [REWRITE]
-interface VendorAPI {
-  id: number;          // ← integer, NOT string
-  zone_id: number;
-  name: string;
-  coordinates: GeoJSON.Point | null;
-  is_active: boolean;
-  subscription: {
-    status: string | null;    // 'active' | 'expired' | 'suspended'
-    reason: string | null;    // SUBSCRIPTION_EXPIRED | ADMIN_BLOCK | etc.
-    expires_at: string | null;
-  };
-  is_checkout_available: boolean;
+export function triggerHaptic(duration: 50 | 80 | 100 | 150 = 50): void {
+  if (typeof navigator !== "undefined" && navigator.vibrate) {
+    navigator.vibrate(duration);
+  }
 }
 ```
 
-**Live `GET /api/vendors/{id}/catalog` response shape** (from [VendorCatalogResource](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/api/app/Http/Resources/VendorCatalogResource.php)):
-```typescript
-interface VendorCatalogAPI extends VendorAPI {
-  categories: {
-    id: number;
-    name: string;
-    products: {
-      id: number;
-      external_id: string;
-      title: string;
-      price: number;
-      image_url: string | null;
-    }[];
-  }[];
-}
-```
+| Duration | Semantic |
+|---|---|
+| `50` | Success (item added) |
+| `80` | Checkout proceed |
+| `100` | Blocked (vendor inactive) |
+| `150` | Error (validation fail) |
 
-#### [MODIFY] [vendor.ts](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/types/vendor.ts)
-- Rewrite all interfaces to match the API shapes above exactly.
-- Remove phantom fields: `category_id`, `isOpenNow`, `offersFastDelivery`, `rating`, `delivery_time_mins`, `image_url`.
-- Add `VendorCatalogAPI`, `ProductAPI`, `CategoryAPI`.
-
-#### [NEW] [zone.ts](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/types/zone.ts)
-- Extract [Zone](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/hooks/useZone.ts#4-8) interface from [useZone.ts](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/hooks/useZone.ts) into a dedicated type file. Use `number` for `id`.
+Apply `triggerHaptic(50)` on `touchstart` for [VendorCard](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/components/omega/vendor-card.tsx#20-134) add button, [StickyCheckoutBar](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/components/omega/sticky-checkout-bar.tsx#14-108) checkout button.
 
 ---
 
-### 1.2 Next.js API Proxy (Rewrites)
+## TASK 2: The Logic Bridge (JWT Cart Token)
 
-The client currently fetches `/api/zones` and `/api/vendors` which hits Next.js itself (404). We need to proxy these to the Laravel backend.
+### 2.1 Cart Share Token — Architecture
 
-#### [MODIFY] [next.config.ts](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/next.config.ts)
+**Goal:** User can share their vendor cart via WhatsApp as a URL. Recipient opens link → cart auto-merges if their own cart is empty.
+
+#### [NEW] [api/app/Http/Controllers/Api/CartTokenController.php](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/api/app/Http/Controllers/Api/CartTokenController.php)
+
+**Endpoints:**
+
+| Method | Path | Throttle | Purpose |
+|---|---|---|---|
+| `POST` | `/api/cart/token` | `10/min` | Encode current cart → JWT (24h expiry) |
+| `GET` | `/api/cart/token/{token}` | `30/min` | Decode JWT → return cart payload |
+
+**JWT Payload:**
+```json
+{
+  "vendor_id": 5,
+  "vendor_name": "Ahmed's Market",
+  "items": [
+    { "product_id": 12, "title": "Tomatoes", "price": 8.5, "quantity": 2, "image_url": null }
+  ],
+  "iat": 1741254000,
+  "exp": 1741340400
+}
+```
+
+**Signing:** Use Laravel's `encrypt()` / `decrypt()` (symmetric AES-256 via `APP_KEY`). No external JWT library needed — this is a self-issued, self-consumed token.
+
+#### [NEW] [src/lib/cart-token.ts](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/lib/cart-token.ts)
+
 ```typescript
-const nextConfig: NextConfig = {
-  reactCompiler: true,
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`,
-      },
-    ];
-  },
-};
+export async function generateCartShareURL(cart: CartState): Promise<string> // POST /api/cart/token → returns token
+export async function resolveCartToken(token: string): Promise<CartState>  // GET /api/cart/token/{token}
 ```
 
-#### [NEW] [.env.local](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/.env.local)
+#### [MODIFY] [whatsapp.ts](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/lib/whatsapp.ts)
+
+Add to checkout message:
 ```
-NEXT_PUBLIC_API_URL=http://localhost:8000
+Share your cart: https://omega.world/cart/{token}
 ```
+
+### 2.2 Recovery Prompt
+
+#### [MODIFY] [CartContext.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/context/CartContext.tsx)
+
+On mount, check `URLSearchParams` for `?cart_token=xxx`. If present **and** local cart is empty → call `resolveCartToken()` → auto-populate [CartState](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/context/CartContext.tsx#24-30). If local cart has items → show a modified [ClearCartModal](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/components/cart/ClearCartModal.tsx#12-61) with copy: "You received a shared cart. Merge or keep your current items?"
 
 ---
 
-### 1.3 Refactor Data Fetching in Existing Pages
+## TASK 3: Virtual Bundle Queue (Multi-Vendor Staging)
 
-#### [MODIFY] [useZone.ts](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/hooks/useZone.ts)
-- Change `Zone.id` from `string` to `number`.
-- Cookie stores `zone_id` as string but parse to number on read.
-
-#### [MODIFY] [page.tsx (Zone Selection)](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/app/page.tsx)
-- Remove mock fallback array. If API fails, show an error state (not fake data).
-- Map `ZoneAPI` response to display. The API only returns zones with active vendors, so no need for `status` field.
-
-#### [MODIFY] [page.tsx (Vendors Feed)](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/app/vendors/page.tsx)
-- Remove `mockVendors` and `mockCategories` imports entirely.
-- Adapt card rendering to use `VendorAPI` shape (no `isOpenNow`, no `rating`, no `delivery_time_mins`).
-- **Decision Required:** The `category_id` field does not exist on [VendorResource](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/api/app/Http/Resources/VendorResource.php#8-41). Categories are only available on the `/catalog` endpoint. The Tier-1 category filter either needs a backend change (add category to vendor list response) or must be removed from the vendor list page and moved to the catalog page.
+### 3.1 Architecture — Respecting Isolated Cart Canon
 
 > [!WARNING]
-> **Founder Decision Required:** The current Vendor list API does not expose category information. Options:
-> 1. **Backend change**: Add a `category_name` or `primary_category` field to [VendorResource](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/api/app/Http/Resources/VendorResource.php#8-41).
-> 2. **Remove Tier-1 filter from `/vendors`** and move category filtering to the individual vendor catalog page.
-> 3. **Add a separate `GET /api/categories` endpoint** and cross-reference client-side.
+> CANON §3: "Checkout locked to ONE vendor per transaction." The staging area does NOT violate this — it queues multiple **separate** single-vendor carts for serial handoff.
 
----
-
-## 2. GEI Implementation — JSON-LD & Dynamic SSR Metadata
-
-### 2.1 JSON-LD Schema Component
-
-#### [NEW] [JsonLd.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/components/seo/JsonLd.tsx)
-A reusable Server Component that injects `<script type="application/ld+json">` into the `<head>`.
-
-```typescript
-// Schema.org LocalBusiness structure
-interface LocalBusinessLD {
-  "@context": "https://schema.org";
-  "@type": "LocalBusiness";
-  name: string;
-  address: {
-    "@type": "PostalAddress";
-    addressLocality: string; // Zone name
-    addressCountry: "EG";
-  };
-  geo?: {
-    "@type": "GeoCoordinates";
-    latitude: number;
-    longitude: number;
-  };
-  isAccessibleForFree: boolean;
-  potentialAction?: {
-    "@type": "OrderAction";
-    target: string; // WhatsApp deep link
-  };
-}
+```
+StagingContext
+├── bundles: StagedBundle[]     // Array of frozen single-vendor carts
+│   ├── bundle[0] { vendor_id: 3, vendor_name: "Ahmed", items: [...], status: "pending" }
+│   ├── bundle[1] { vendor_id: 7, vendor_name: "Fatima", items: [...], status: "pending" }
+├── activeBundleIndex: number   // Current position in the handoff sequence
 ```
 
-### 2.2 Dynamic SSR Metadata via `generateMetadata`
-
-#### [NEW] [app/vendors/[id]/page.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/app/vendors/[id]/page.tsx)
-- This is the **individual vendor catalog page** (Server Component).
-- Uses `generateMetadata()` to fetch vendor data server-side and produce `<title>`, `<meta description>`, and the JSON-LD block.
-- Renders the product catalog with categories.
+#### [NEW] [src/context/StagingContext.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/context/StagingContext.tsx)
 
 ```typescript
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const vendor = await fetchVendorCatalog(params.id);
-  return {
-    title: `${vendor.name} | OMEGA World`,
-    description: `Order from ${vendor.name}. Hyper-local delivery within your secure perimeter.`,
-  };
-}
-```
-
----
-
-## 3. Lead Gen — `/join` Page Architecture
-
-### 3.1 Page Structure & Psychology
-
-#### [NEW] [app/join/page.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/app/join/page.tsx)
-
-**Layout Sections (Top-Down):**
-
-| Section | Content | Psychology |
-|---|---|---|
-| Hero | "Join the OMEGA Family" + Shield icon | Trust anchor |
-| Scarcity Counter | "Only **{N}** seats left for Free Trial" | FOMO trigger |
-| Form | 4 fields (below) | Low friction |
-| Social Proof | "Trusted by vendors in {Zone}" | Authority |
-| CTA | "Apply Now → WhatsApp" | Action clarity |
-
-**Form Fields:**
-1. `business_name` — text, required
-2. `owner_name` — text, required
-3. `whatsapp_number` — tel, required, Egyptian format validation (`+20`)
-4. `zone_id` — pre-filled from cookie (read-only if set, dropdown if not)
-
-**State Management:**
-- `remainingSeats`: Initialize from `localStorage` or API. Decrement visually on submit (client-side illusion; backend is source of truth).
-- On submit: Construct a WhatsApp deep link: `https://wa.me/20XXXXXXXXX?text=...` with pre-filled enrollment message containing form data.
-- Redirect user to the WhatsApp link.
-
-### 3.2 Scarcity Counter Logic
-
-```typescript
-// src/hooks/useScarcityCounter.ts [NEW]
-// Reads initial count from API or falls back to localStorage cache.
-// On form submit, decrements the displayed count.
-// The counter is NOT authoritative — it's a UX device.
-```
-
----
-
-## 4. Isolated Cart — `CartContext` & Vendor Lock
-
-### 4.1 Cart State Architecture
-
-#### [NEW] [src/context/CartContext.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/context/CartContext.tsx)
-
-```typescript
-interface CartItem {
-  product_id: number;
-  title: string;
-  price: number;
-  quantity: number;
-  image_url: string | null;
-}
-
-interface CartState {
-  vendor_id: number | null;    // LOCK: only one vendor at a time
-  vendor_name: string | null;
+interface StagedBundle {
+  vendor_id: number;
+  vendor_name: string;
+  whatsapp_number: string;
   items: CartItem[];
-  device_hash: string;
+  status: "pending" | "sent" | "skipped";
 }
 
-interface CartContextValue extends CartState {
-  addItem: (vendor: { id: number; name: string }, item: CartItem) => void;
-  removeItem: (product_id: number) => void;
-  updateQuantity: (product_id: number, quantity: number) => void;
-  clearCart: () => void;
-  total: number;
-}
-```
-
-**Vendor Lock Logic:**
-- `addItem()` checks if `state.vendor_id` is `null` or matches the incoming `vendor.id`.
-- If mismatch → trigger the **"Clear Cart" Warning Modal** (Framer Motion).
-- User must explicitly confirm clearing the existing cart before switching vendors.
-
-**Persistence:** Cart state serialized to `localStorage` keyed by `device_hash`.
-
-### 4.2 Clear Cart Warning Modal
-
-#### [NEW] [src/components/cart/ClearCartModal.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/components/cart/ClearCartModal.tsx)
-
-- Framer Motion `AnimatePresence` overlay.
-- Copy: "You have items from **{vendor_name}**. Starting a new order will clear your current cart."
-- Two buttons: **"Keep Cart"** (dismiss) | **"Clear & Switch"** (destructive, Deep Navy bg).
-- No orange. Destructive state uses a muted red (`#EF4444` / Tailwind `red-500`).
-
-### 4.3 WhatsApp Handoff
-
-#### [NEW] [src/lib/whatsapp.ts](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/lib/whatsapp.ts)
-
-```typescript
-function buildWhatsAppCheckoutURL(vendor: VendorAPI, cart: CartItem[]): string {
-  // Constructs: https://wa.me/{vendor.whatsapp_number}?text={encoded_order_summary}
-  // Order summary includes: item list, quantities, total, device_hash for tracking
+interface StagingContextValue {
+  bundles: StagedBundle[];
+  stageCurrentCart: () => void;     // Freezes CartContext → pushes to bundles
+  startBatchHandoff: () => void;    // Begins serial WhatsApp sequence
+  advanceHandoff: () => void;       // Marks current as "sent", moves to next
+  skipBundle: (index: number) => void;
+  clearStaging: () => void;
 }
 ```
 
-> [!IMPORTANT]
-> The `whatsapp_number` field exists on the [Vendor](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/types/vendor.ts#13-26) model but is NOT exposed in [VendorResource](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/api/app/Http/Resources/VendorResource.php#8-41). A backend modification is required to add `whatsapp_number` to the catalog response.
+### 3.2 Batch Order Flow UI
+
+#### [NEW] [src/app/checkout/page.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/app/checkout/page.tsx)
+
+**Layout:**
+
+```
+┌─ Batch Checkout ────────────────────────────┐
+│ "Your Orders" (H1)                          │
+│                                              │
+│ ┌─ Bundle 1: Ahmed's Market ──────────────┐ │
+│ │ 3 items • EGP 45.00   [Send ✓] [Skip]  │ │
+│ └─────────────────────────────────────────┘ │
+│                                              │
+│ ┌─ Bundle 2: Fatima's Spice Shop ─────────┐ │
+│ │ 1 item • EGP 18.99    [Queued]          │ │
+│ └─────────────────────────────────────────┘ │
+│                                              │
+│ Progress: [████░░] 1 of 2 sent              │
+└──────────────────────────────────────────────┘
+```
+
+User taps "Send" → [buildWhatsAppCheckoutURL()](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/lib/whatsapp.ts#13-41) for that bundle → redirect to WhatsApp → return → status flips to "sent" → next bundle activates.
 
 ---
 
-## 5. Device Identity — `device_hash`
+## File Manifest
 
-#### [NEW] [src/lib/device.ts](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/lib/device.ts)
-
-```typescript
-// Generates a persistent anonymous device identifier.
-// Strategy:
-// 1. Check localStorage for existing 'omega_device_hash'.
-// 2. If not found, generate a UUID v4 (crypto.randomUUID()).
-// 3. Store in localStorage.
-// 4. Return the hash.
-//
-// This hash is attached to:
-// - Cart state (for persistence)
-// - WhatsApp handoff payload (for order tracking)
-// - Future: analytics events
-
-export function getDeviceHash(): string { ... }
-```
-
----
-
-## File Manifest (New & Modified)
-
-| Action | Path | Type |
+| Action | Path | Category |
 |---|---|---|
-| MODIFY | [client/next.config.ts](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/next.config.ts) | Config |
-| NEW | `client/.env.local` | Config |
-| MODIFY | [client/src/types/vendor.ts](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/types/vendor.ts) | Types |
-| NEW | `client/src/types/zone.ts` | Types |
-| MODIFY | [client/src/hooks/useZone.ts](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/hooks/useZone.ts) | Hook |
-| MODIFY | [client/src/app/page.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/app/page.tsx) | Page |
-| MODIFY | [client/src/app/vendors/page.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/app/vendors/page.tsx) | Page |
-| NEW | `client/src/app/vendors/[id]/page.tsx` | Page (SSR) |
-| NEW | `client/src/app/join/page.tsx` | Page |
-| NEW | `client/src/components/seo/JsonLd.tsx` | Component |
-| NEW | `client/src/components/cart/ClearCartModal.tsx` | Component |
-| NEW | `client/src/context/CartContext.tsx` | Context |
-| NEW | `client/src/hooks/useScarcityCounter.ts` | Hook |
-| NEW | `client/src/lib/device.ts` | Utility |
-| NEW | `client/src/lib/whatsapp.ts` | Utility |
-| DELETE | [client/src/mocks/vendors.ts](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/mocks/vendors.ts) | Mock data |
+| MODIFY | [client/src/app/globals.css](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/app/globals.css) | Theme → V3 tokens |
+| NEW | `client/src/lib/haptic.ts` | Utility |
+| MODIFY | [client/src/components/omega/vendor-card.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/components/omega/vendor-card.tsx) | Scrim patch + haptic |
+| MODIFY | [client/src/components/omega/sticky-checkout-bar.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/components/omega/sticky-checkout-bar.tsx) | Haptic + dead zone |
+| MODIFY | [client/src/components/cart/ClearCartModal.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/components/cart/ClearCartModal.tsx) | Merge prompt variant |
+| MODIFY | [client/src/context/CartContext.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/context/CartContext.tsx) | Cart token recovery |
+| NEW | `client/src/context/StagingContext.tsx` | Multi-vendor staging |
+| NEW | `client/src/lib/cart-token.ts` | Share URL builder |
+| MODIFY | [client/src/lib/whatsapp.ts](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/lib/whatsapp.ts) | Add share link to message |
+| MODIFY | [client/src/app/providers.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/app/providers.tsx) | Wrap StagingProvider |
+| NEW | `client/src/app/checkout/page.tsx` | Batch handoff UI |
+| NEW | `api/app/Http/Controllers/Api/CartTokenController.php` | JWT encode/decode |
+| MODIFY | [api/routes/api.php](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/api/routes/api.php) | Cart token routes |
+| MODIFY | [api/app/Providers/AppServiceProvider.php](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/api/app/Providers/AppServiceProvider.php) | Cart token rate limiters |
 
----
+## Component Refactor List (V3 → V3.1)
 
-## Audit Criteria (Opus Checklist)
-
-Phase 6 will be approved **only** if ALL of the following pass:
-
-| # | Criterion | Method |
+| Component | Current State | V3.1 Change |
 |---|---|---|
-| A1 | `next build` exits with code 0 | `pnpm run build` |
-| A2 | Zero `any` types in new/modified files | `grep -r ': any' src/` should return zero hits (excluding `IconMap` if justified) |
-| A3 | No orange hex codes (`#FF`, `#ff`, `orange`) in any CSS/TSX | `grep -riE '(orange\|#ff[a-f0-9]{4}\|#ffa)' src/` |
-| A4 | `VendorAPI` interface matches `VendorResource::toArray()` 1:1 | Manual diff |
-| A5 | `ZoneAPI` interface matches `ZoneResource::toArray()` 1:1 | Manual diff |
-| A6 | JSON-LD output validates at [Schema.org validator](https://validator.schema.org/) | Browser test on `/vendors/{id}` |
-| A7 | Cart Vendor Lock prevents cross-vendor item addition | Browser test: add item from Vendor A, attempt add from Vendor B → modal appears |
-| A8 | `device_hash` persists across page reloads | Browser test: check `localStorage` before and after reload |
-| A9 | WhatsApp redirect constructs valid `wa.me` URL | Browser test on cart checkout |
-| A10 | `/join` form validates Egyptian phone format | Browser test: submit with invalid number → error shown |
-| A11 | No mock data imported anywhere in production code | `grep -r 'mocks/' src/app/` returns zero hits |
-| A12 | `generateMetadata` produces correct `<title>` for vendor pages | View page source on `/vendors/{id}` |
-
----
+| [vendor-card.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/components/omega/vendor-card.tsx) | Gradient waiting overlay | → `#E2E8F0/70` scrim + 48px Clock icon |
+| [vendor-card.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/components/omega/vendor-card.tsx) | No haptic | → `triggerHaptic(50)` on add, [(100)](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/api/app/Providers/AppServiceProvider.php#20-50) on blocked |
+| [sticky-checkout-bar.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/components/omega/sticky-checkout-bar.tsx) | 12px internal gaps | → 20px dead zones |
+| [sticky-checkout-bar.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/components/omega/sticky-checkout-bar.tsx) | No haptic | → `triggerHaptic(80)` on checkout |
+| [ClearCartModal.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/components/cart/ClearCartModal.tsx) | Vendor-switch only | → Add "merge shared cart" variant |
+| [globals.css](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/app/globals.css) | V1 palette | → Full V3 token set |
+| [VendorCatalogClient.tsx](file:///opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/client/src/components/vendors/VendorCatalogClient.tsx) | 12px card gaps | → 20px dead zones |
 
 ## Verification Plan
 
 ### Automated
-1. **Build Verification**: `cd client && pnpm run build` — must exit 0.
-2. **Type Safety Audit**: `cd client && npx tsc --noEmit` — must exit 0 with zero errors.
-3. **Orange Ban Grep**: `grep -riE '(orange|#ff[a-f0-9]{4}|#ffa)' client/src/` — must return empty.
-4. **Mock Purge Grep**: `grep -r 'mocks/' client/src/app/` — must return empty.
+1. `pnpm run build` — exit 0
+2. `grep -riE '(gap-3|gap-2|space-y-3|space-y-2)' client/src/components/omega/` — zero hits (dead zones enforced)
+3. `grep -rn 'omega-pulse' client/src/app/globals.css` — confirms keyframe present
 
-### Manual (Browser — Requires `pnpm run dev`)
-1. Navigate to `/` → Verify zones load from API (or show error state, not mock data).
-2. Select a zone → Navigate to `/vendors` → Verify vendor cards render from live API.
-3. Navigate to `/vendors/{id}` → View page source → Confirm JSON-LD `<script>` block and `<title>` tag.
-4. Add a product to cart → Attempt adding from a different vendor → Confirm modal appears.
-5. Reload page → Confirm cart state persists via `device_hash` in `localStorage`.
-6. Navigate to `/join` → Fill form → Confirm WhatsApp redirect opens with pre-filled message.
-
-> [!CAUTION]
-> Manual browser tests require the Laravel API to be running (`php artisan serve`) with seeded data. If the API is not available, verification is limited to build + type checks.
+### Manual (Browser — `pnpm run dev`)
+1. **20px Gap Test:** Open `/omega-v3-demo` → DevTools → measure gap between "Add to Cart" buttons → must be ≥ 20px
+2. **Scrim Test:** Set a vendor to `isWaiting: true` → confirm solid `#E2E8F0` scrim with Clock icon (no gradient)
+3. **Haptic Test:** Android device → tap "Add to Cart" → feel 50ms vibration
+4. **Join Dwell Time:** Open `/join` → start timer → confirm WhatsApp redirect does NOT trigger before form validation clears (min 2s interaction time enforced by cooldown + session init)
+5. **Cart Share:** Add items → generate share URL → open in incognito → confirm cart merges
+6. **Batch Handoff:** Stage 2 vendor carts → navigate to `/checkout` → send first → confirm second activates

@@ -78,11 +78,14 @@ export default function VendorsPage() {
 
   if (!activeZone) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
-        <Store className="h-10 w-10 text-slate" />
+      <div className="flex h-full flex-col items-center justify-center gap-5 px-6 text-center">
+        <Store className="h-10 w-10 text-muted" />
         <h1 className="text-xl font-semibold text-navy">Zone Required</h1>
-        <p className="text-sm text-slate">Select your zone first to view hyper-local vendors.</p>
-        <Link href="/" className="rounded-xl bg-navy px-4 py-2 text-sm font-semibold text-white">
+        <p className="text-sm text-muted">Select your zone first to view hyper-local vendors.</p>
+        <Link
+          href="/"
+          className="flex min-h-14 items-center justify-center rounded-[var(--radius-secondary)] bg-navy px-4 py-2 text-sm font-semibold text-white"
+        >
           Choose Zone
         </Link>
       </div>
@@ -92,10 +95,10 @@ export default function VendorsPage() {
   return (
     <div className="flex h-full flex-col bg-background">
       <div className="sticky top-0 z-20 border-b border-slate/10 bg-background/90 px-6 py-4 backdrop-blur-xl">
-        <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="mb-4 flex items-start justify-between gap-5">
           <div>
             <h1 className="text-xl font-bold text-navy">Local Vendors</h1>
-            <div className="mt-1 flex items-center gap-1 text-xs text-slate">
+            <div className="mt-1 flex items-center gap-2 text-xs text-muted">
               <MapPin className="h-3 w-3 text-emerald" />
               <span>{activeZone.name}</span>
             </div>
@@ -103,14 +106,14 @@ export default function VendorsPage() {
           <button
             type="button"
             onClick={clearZone}
-            className="rounded-lg border border-slate/20 px-3 py-1.5 text-xs font-medium text-slate transition hover:border-navy/30 hover:text-navy"
+            className="rounded-lg border border-slate/20 px-3 py-1.5 text-xs font-medium text-muted transition hover:border-navy/30 hover:text-navy"
           >
             Change Zone
           </button>
         </div>
 
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate/60" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted/60" />
           <input
             type="search"
             value={searchQuery}
@@ -120,7 +123,7 @@ export default function VendorsPage() {
           />
         </div>
 
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+        <div className="mt-5 flex gap-5 overflow-x-auto pb-1">
           {categoryOptions.map((category) => {
             const isActive = category === activeCategory;
             const label = category === "all" ? "All" : category;
@@ -131,7 +134,7 @@ export default function VendorsPage() {
                 type="button"
                 onClick={() => setActiveCategory(category)}
                 className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                  isActive ? "bg-navy text-white" : "bg-slate/8 text-slate hover:bg-slate/15"
+                  isActive ? "bg-navy text-white" : "bg-slate/8 text-muted hover:bg-slate/15"
                 }`}
               >
                 {label}
@@ -162,7 +165,7 @@ export default function VendorsPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="space-y-4"
+            className="space-interactive-y"
           >
             {filteredVendors.map((vendor) => (
               <article
@@ -173,10 +176,10 @@ export default function VendorsPage() {
                     : "border-slate/10 bg-slate/5 opacity-85"
                 }`}
               >
-                <div className="mb-4 flex items-start justify-between gap-3">
+                <div className="mb-5 flex items-start justify-between gap-5">
                   <div>
                     <h2 className="text-lg font-semibold text-navy">{vendor.name}</h2>
-                    <p className="mt-1 text-xs text-slate">
+                    <p className="mt-1 text-xs text-muted">
                       {vendor.primary_category ?? "General"}
                     </p>
                   </div>
@@ -184,7 +187,7 @@ export default function VendorsPage() {
                     className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${
                       vendor.is_checkout_available
                         ? "bg-emerald/15 text-emerald"
-                        : "bg-slate/12 text-slate"
+                        : "bg-slate/12 text-muted"
                     }`}
                   >
                     {vendor.is_checkout_available ? "Checkout Ready" : "Waiting"}
@@ -193,13 +196,13 @@ export default function VendorsPage() {
 
                 <Link
                   href={`/vendors/${vendor.id}`}
-                  className="block w-full rounded-xl bg-navy px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-navy/90"
+                  className="flex min-h-14 w-full items-center justify-center rounded-[var(--radius-secondary)] bg-navy px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-navy/90"
                 >
                   Open Catalog
                 </Link>
 
                 {!vendor.is_checkout_available ? (
-                  <div className="mt-2 flex items-center gap-2 rounded-xl bg-slate/10 px-3 py-2.5 text-xs font-medium text-slate">
+                  <div className="mt-5 flex items-center gap-2 rounded-xl bg-slate/10 px-3 py-2.5 text-xs font-medium text-muted">
                     <AlertCircle className="h-4 w-4" />
                     <span>{formatSubscriptionReason(vendor.subscription.reason)}</span>
                   </div>
@@ -209,7 +212,7 @@ export default function VendorsPage() {
 
             {filteredVendors.length === 0 ? (
               <div className="rounded-2xl border border-slate/15 bg-slate/5 p-6 text-center">
-                <p className="text-sm text-slate">No vendors match your current filters.</p>
+                <p className="text-sm text-muted">No vendors match your current filters.</p>
               </div>
             ) : null}
           </motion.div>
