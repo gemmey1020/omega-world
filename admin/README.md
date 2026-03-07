@@ -51,6 +51,12 @@ pnpm --filter omega-command-center dev
 
 The application will start at `http://localhost:3001`.
 
+Create `admin/.env.local` before running the orders screen:
+
+```bash
+OMEGA_API_BASE_URL=http://127.0.0.1:8000
+```
+
 ### Build
 
 ```bash

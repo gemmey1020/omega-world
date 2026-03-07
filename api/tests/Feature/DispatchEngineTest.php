@@ -173,6 +173,50 @@ class DispatchEngineTest extends TestCase
             ->assertJsonPath('current_state.order_status', Order::STATUS_DISPATCHED);
     }
 
+    public function test_provider_accept_url_contains_nonce_and_stale_links_are_rejected(): void
+    {
+        Carbon::setTestNow('2026-03-07 11:15:00');
+
+        $profile = $this->createSlaProfile('Retail', SlaProfile::TYPE_RETAIL, 10, 30, 60);
+        $zoneId = $this->createZone($profile->id);
+        $provider = $this->createProvider([
+            'type' => Provider::TYPE_MERCHANT,
+            'zone_id' => $zoneId,
+            'sla_profile_id' => $profile->id,
+        ]);
+        $order = $this->createOrder([
+            'kind' => Order::KIND_RETAIL,
+            'zone_id' => $zoneId,
+            'provider_id' => $provider->id,
+            'status' => Order::STATUS_RECEIVED,
+            'received_at' => now(),
+        ]);
+
+        app(OrderDispatchService::class)->assignNewOrder($order->id);
+
+        $assignment = DispatchAssignment::query()->firstOrFail();
+        $escalationService = app(EscalationService::class);
+        $signedUrl = $escalationService->buildAcceptUrl($assignment);
+        $query = [];
+        parse_str((string) parse_url($signedUrl, PHP_URL_QUERY), $query);
+
+        $this->assertSame($escalationService->assignmentNonce($assignment), $query['nonce'] ?? null);
+
+        Carbon::setTestNow('2026-03-07 11:15:03');
+        $assignment->forceFill([
+            'notes' => 'nonce invalidated',
+        ])->save();
+
+        $this->postJson($this->relativeSignedUrl($signedUrl))
+            ->assertStatus(409)
+            ->assertJsonPath('message', 'Assignment link is stale.')
+            ->assertJsonPath('current_state.assignment_id', $assignment->id)
+            ->assertJsonPath('current_state.assignment_status', DispatchAssignment::STATUS_PENDING_ACK)
+            ->assertJsonPath('current_state.order_id', $order->id)
+            ->assertJsonPath('current_state.order_status', Order::STATUS_AWAITING_PROVIDER_ACK)
+            ->assertJsonPath('current_state.nonce_stale', true);
+    }
+
     public function test_admin_dispatch_endpoints_mark_in_transit_and_delivered(): void
     {
         Carbon::setTestNow('2026-03-07 12:00:00');

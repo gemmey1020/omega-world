@@ -8,7 +8,9 @@ use App\Models\Order;
 use App\Models\Provider;
 use App\Models\ProviderNotification;
 use App\Models\SlaProfile;
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -54,12 +56,14 @@ class OrderDispatchService
             return $order->fresh(['latestDispatchAssignment']);
         };
 
-        return $alreadyInTransaction ? $callback() : DB::transaction($callback);
+        /** @var Order */
+        return $this->runCriticalDispatchTransaction($callback, $alreadyInTransaction);
     }
 
     public function acceptAssignment(int $assignmentId): Order
     {
-        return DB::transaction(function () use ($assignmentId): Order {
+        /** @var Order */
+        return $this->runCriticalDispatchTransaction(function () use ($assignmentId): Order {
             $assignment = DispatchAssignment::query()->findOrFail($assignmentId);
             $order = $this->lockOrder((int) $assignment->order_id);
             $assignment = $this->lockAssignment($assignmentId);
@@ -106,7 +110,8 @@ class OrderDispatchService
 
     public function markInTransit(int $orderId, ?int $actorUserId = null): Order
     {
-        return DB::transaction(function () use ($orderId, $actorUserId): Order {
+        /** @var Order */
+        return $this->runCriticalDispatchTransaction(function () use ($orderId, $actorUserId): Order {
             $order = $this->lockOrder($orderId);
 
             if ($order->status !== Order::STATUS_DISPATCHED) {
@@ -144,7 +149,8 @@ class OrderDispatchService
 
     public function markDelivered(int $orderId, ?int $actorUserId = null): Order
     {
-        return DB::transaction(function () use ($orderId, $actorUserId): Order {
+        /** @var Order */
+        return $this->runCriticalDispatchTransaction(function () use ($orderId, $actorUserId): Order {
             $order = $this->lockOrder($orderId);
 
             if ($order->status !== Order::STATUS_IN_TRANSIT) {
@@ -187,7 +193,7 @@ class OrderDispatchService
 
     public function processSlaBreachesForOrder(int $orderId, ?Carbon $referenceTime = null): void
     {
-        DB::transaction(function () use ($orderId, $referenceTime): void {
+        $this->runCriticalDispatchTransaction(function () use ($orderId, $referenceTime): void {
             $order = $this->lockOrder($orderId);
             $referenceTime ??= now();
 
@@ -527,6 +533,7 @@ class OrderDispatchService
                 ->whereKey($order->provider_id)
                 ->where('status', Provider::STATUS_ACTIVE)
                 ->lockForUpdate()
+                ->skipLocked()
                 ->first();
         }
 
@@ -540,52 +547,137 @@ class OrderDispatchService
             )
             ->orderBy('id')
             ->lockForUpdate()
+            ->skipLocked()
             ->first();
     }
 
     private function lockOrder(int $orderId): Order
     {
-        return Order::query()
+        $order = Order::query()
             ->with([
                 'provider.slaProfile',
                 'zone.defaultSlaProfile',
                 'latestDispatchAssignment',
             ])
+            ->whereKey($orderId)
             ->lockForUpdate()
-            ->findOrFail($orderId);
+            ->skipLocked()
+            ->first();
+
+        if ($order !== null) {
+            return $order;
+        }
+
+        if (Order::query()->whereKey($orderId)->exists()) {
+            throw $this->busyConflict('Order is currently being updated by another transaction.', [
+                'order_id' => $orderId,
+            ]);
+        }
+
+        throw (new ModelNotFoundException())->setModel(Order::class, [$orderId]);
     }
 
     private function lockAssignment(int $assignmentId): DispatchAssignment
     {
-        return DispatchAssignment::query()
+        $assignment = DispatchAssignment::query()
+            ->whereKey($assignmentId)
             ->lockForUpdate()
-            ->findOrFail($assignmentId);
+            ->skipLocked()
+            ->first();
+
+        if ($assignment !== null) {
+            return $assignment;
+        }
+
+        if (DispatchAssignment::query()->whereKey($assignmentId)->exists()) {
+            throw $this->busyConflict('Assignment is currently being updated by another transaction.', [
+                'dispatch_assignment_id' => $assignmentId,
+            ]);
+        }
+
+        throw (new ModelNotFoundException())->setModel(DispatchAssignment::class, [$assignmentId]);
     }
 
     private function lockPendingAssignment(Order $order): ?DispatchAssignment
     {
-        return DispatchAssignment::query()
+        $query = DispatchAssignment::query()
             ->where('order_id', $order->id)
             ->where('status', DispatchAssignment::STATUS_PENDING_ACK)
-            ->orderByDesc('attempt_no')
+            ->orderByDesc('attempt_no');
+
+        $assignment = (clone $query)
             ->lockForUpdate()
+            ->skipLocked()
             ->first();
+
+        if ($assignment !== null) {
+            return $assignment;
+        }
+
+        return $query->exists() ? null : null;
     }
 
     private function lockLatestAcceptedAssignment(Order $order, bool $throwOnMissing = true): ?DispatchAssignment
     {
-        $assignment = DispatchAssignment::query()
+        $query = DispatchAssignment::query()
             ->where('order_id', $order->id)
             ->whereIn('status', [DispatchAssignment::STATUS_ACCEPTED, DispatchAssignment::STATUS_COMPLETED])
-            ->orderByDesc('attempt_no')
+            ->orderByDesc('attempt_no');
+
+        $assignment = (clone $query)
             ->lockForUpdate()
+            ->skipLocked()
             ->first();
+
+        if ($assignment !== null) {
+            return $assignment;
+        }
+
+        if ($query->exists()) {
+            if ($throwOnMissing) {
+                throw $this->busyConflict('Assignment is currently being updated by another transaction.', [
+                    'order_id' => $order->id,
+                ]);
+            }
+
+            return null;
+        }
 
         if ($assignment === null && $throwOnMissing) {
             throw $this->conflict($order, 'No accepted assignment exists for this order.');
         }
 
         return $assignment;
+    }
+
+    /**
+     * @template TReturn
+     *
+     * @param  Closure(): TReturn  $callback
+     * @return TReturn
+     */
+    private function runCriticalDispatchTransaction(Closure $callback, bool $alreadyInTransaction = false): mixed
+    {
+        if ($alreadyInTransaction && DB::transactionLevel() > 0) {
+            $this->applyCriticalDispatchLockTimeout();
+
+            return $callback();
+        }
+
+        return DB::transaction(function () use ($callback): mixed {
+            $this->applyCriticalDispatchLockTimeout();
+
+            return $callback();
+        });
+    }
+
+    private function applyCriticalDispatchLockTimeout(): void
+    {
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
+
+        DB::statement("SET LOCAL lock_timeout = '500ms'");
     }
 
     private function diffInSeconds(?Carbon $from, Carbon $to): int
@@ -606,5 +698,16 @@ class OrderDispatchService
             'assignment_status' => $assignment?->status,
             'attempt_no' => $assignment?->attempt_no,
         ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    private function busyConflict(string $message, array $context = []): DispatchStateException
+    {
+        return new DispatchStateException($message, array_merge($context, [
+            'busy' => true,
+            'lock_skipped' => true,
+        ]));
     }
 }

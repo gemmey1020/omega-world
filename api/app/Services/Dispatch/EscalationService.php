@@ -12,6 +12,11 @@ use Illuminate\Support\Facades\URL;
 
 class EscalationService
 {
+    public function assignmentNonce(DispatchAssignment $assignment): string
+    {
+        return ($assignment->updated_at ?? $assignment->created_at ?? now())->format('Y-m-d\\TH:i:s.uP');
+    }
+
     public function createInitialWhatsappNotification(
         Order $order,
         DispatchAssignment $assignment,
@@ -77,7 +82,10 @@ class EscalationService
         return URL::temporarySignedRoute(
             'provider.assignments.accept',
             $expiresAt,
-            ['assignment' => $assignment->id]
+            [
+                'assignment' => $assignment->id,
+                'nonce' => $this->assignmentNonce($assignment),
+            ]
         );
     }
 
