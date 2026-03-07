@@ -1,0 +1,22 @@
+[00:00:00.809] Server  LOG     ✓ Ready in 542ms
+[00:00:02.454] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:02.483] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:06.191] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[00:00:08.029] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:10.834] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:13.575] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[00:01:57.964] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:12:28.080] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/admin/src/app'
+[00:12:28.095] Server  ERROR   ⨯ "unhandledRejection:" Error: ENOENT: no such file or directory, scandir '/opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/admin/src/app'
+[00:12:28.127] Server  ERROR   ⨯ "unhandledRejection: " Error: ENOENT: no such file or directory, scandir '/opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/admin/src/app'
+[00:12:28.151] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/admin/src/app'
+[00:12:28.155] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/admin/src/app'
+[00:12:28.176] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/admin/src/app'
+[00:12:28.184] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/admin/src/app'
+[00:12:28.195] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/admin/src/app'
+[00:12:28.198] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/admin/src/app'
+[00:12:28.208] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/admin/src/app'
+[00:12:28.217] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/admin/src/app'
+[00:12:28.262] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/admin/src/app'
+[00:12:28.264] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/admin/src/app'
+[00:12:28.305] Server  LOG     ✓ Compiled in 307ms
