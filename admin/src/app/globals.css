@@ -1,0 +1,75 @@
+@import 'tailwindcss';
+
+@theme {
+  /* OMEGA V3 Design System */
+  --color-navy: #0f172a;
+  --color-slate: #475569;
+  --color-emerald: #059669;
+  --color-red: #dc2626;
+  
+  /* Semantic Colors */
+  --color-background: var(--color-navy);
+  --color-foreground: #f1f5f9;
+  --color-surface: #1e293b;
+  --color-border: #334155;
+  
+  /* Status Colors */
+  --color-success: var(--color-emerald);
+  --color-warning: #f59e0b;
+  --color-error: var(--color-red);
+  --color-info: #3b82f6;
+  
+  /* Radii */
+  --radius-sm: 10px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  
+  /* Font System */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+* {
+  @apply border-border;
+}
+
+html {
+  @apply scroll-smooth;
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Disable animations for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    @apply !duration-0 !animate-none;
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  @apply w-2 h-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-surface;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate rounded-md hover:bg-slate-400;
+}
+
+/* Selection Styling */
+::selection {
+  @apply bg-emerald text-navy;
+}
+
+/* Focus Visible */
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-emerald;
+}
