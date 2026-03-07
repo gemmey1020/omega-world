@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, Bell, Settings } from '@radix-ui/react-icons';
+import { MagnifyingGlassIcon, BellIcon, GearIcon } from '@radix-ui/react-icons';
 
 export default function TopBar() {
   return (
@@ -19,7 +19,7 @@ export default function TopBar() {
         {/* Search Bar */}
         <div className="flex-1 max-w-xs mx-auto hidden md:flex">
           <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate pointer-events-none" />
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate pointer-events-none" />
             <input
               type="text"
               placeholder="Search operations..."
@@ -35,13 +35,13 @@ export default function TopBar() {
             className="w-10 h-10 rounded-[10px] flex items-center justify-center text-slate hover:text-foreground hover:bg-navy transition-colors"
             aria-label="Notifications"
           >
-            <Bell className="w-5 h-5" />
+            <BellIcon className="w-5 h-5" />
           </button>
           <button
             className="w-10 h-10 rounded-[10px] flex items-center justify-center text-slate hover:text-foreground hover:bg-navy transition-colors"
             aria-label="Settings"
           >
-            <Settings className="w-5 h-5" />
+            <GearIcon className="w-5 h-5" />
           </button>
           <div className="w-10 h-10 rounded-[10px] bg-gradient-to-br from-emerald to-slate flex items-center justify-center flex-shrink-0">
             <span className="text-navy font-semibold text-xs">AD</span>

@@ -19,6 +19,7 @@ class Vendor extends Model
         'whatsapp_number',
         'config_url',
         'zone_id',
+        'provider_id',
         'coordinates',
         'is_active',
     ];
@@ -50,5 +51,15 @@ class Vendor extends Model
     public function analytics(): HasMany
     {
         return $this->hasMany(VendorAnalytics::class);
+    }
+
+    public function provider(): BelongsTo
+    {
+        return $this->belongsTo(Provider::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
     }
 }
