@@ -1,0 +1,10 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e26]:
+    - img [ref=e27]
+    - heading "Zone Required" [level=1] [ref=e31]
+    - paragraph [ref=e32]: Select your zone first to view hyper-local vendors.
+    - link "Choose Zone" [ref=e33] [cursor=pointer]:
+      - /url: /
+  - button "Open Next.js Dev Tools" [ref=e22] [cursor=pointer]:
+    - img [ref=e23]
+  - alert [ref=e34]
