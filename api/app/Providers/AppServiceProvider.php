@@ -86,6 +86,9 @@ class AppServiceProvider extends ServiceProvider
                 Limit::perMinutes(10, 5)
                     ->by("checkout-orders:device:{$deviceHash}")
                     ->response(fn (Request $request, array $headers) => $this->buildThrottleResponse($request, $headers, 'checkout-orders')),
+                Limit::perMinutes(10, 5)
+                    ->by($this->resolveCheckoutFingerprintKey($request))
+                    ->response(fn (Request $request, array $headers) => $this->buildThrottleResponse($request, $headers, 'checkout-orders')),
             ];
         });
     }
@@ -99,13 +102,25 @@ class AppServiceProvider extends ServiceProvider
 
     private function resolveActorRateLimitKey(Request $request, string $scope): string
     {
-        $actorId = $request->user()?->getAuthIdentifier();
+        $actorId = $request->user('admin')?->getAuthIdentifier()
+            ?? $request->user()?->getAuthIdentifier();
 
         if ($actorId !== null) {
             return "{$scope}:user:{$actorId}";
         }
 
         return "{$scope}:{$this->resolveIpRateLimitKey($request)}";
+    }
+
+    private function resolveCheckoutFingerprintKey(Request $request): string
+    {
+        $normalizedUserAgent = substr(
+            strtolower(trim((string) ($request->userAgent() ?? 'unknown-user-agent'))),
+            0,
+            255
+        );
+
+        return 'checkout-orders:fingerprint:'.hash('sha256', $normalizedUserAgent);
     }
 
     /**

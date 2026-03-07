@@ -96,14 +96,18 @@ class BackfillProvidersFromVendors extends Command
                             'source' => 'vendor_backfill',
                         ];
                         $provider->deleted_at = $vendor->deleted_at;
-                        $provider->save();
+                        if ($provider->isDirty()) {
+                            $provider->save();
+                        }
 
-                        DB::table('providers')
-                            ->where('id', $provider->id)
-                            ->update([
-                                'coordinates' => DB::raw("(SELECT coordinates FROM vendors WHERE id = {$vendor->id})"),
-                                'updated_at' => now(),
-                            ]);
+                        if ($this->providerCoordinatesDifferFromVendor($provider->id, $vendor->id)) {
+                            DB::table('providers')
+                                ->where('id', $provider->id)
+                                ->update([
+                                    'coordinates' => DB::raw("(SELECT coordinates FROM vendors WHERE id = {$vendor->id})"),
+                                    'updated_at' => now(),
+                                ]);
+                        }
 
                         if ($provider->trashed() && ! $vendor->trashed()) {
                             $provider->restore();
@@ -199,5 +203,20 @@ class BackfillProvidersFromVendors extends Command
         }
 
         return Provider::STATUS_EXPIRED;
+    }
+
+    private function providerCoordinatesDifferFromVendor(int $providerId, int $vendorId): bool
+    {
+        $providerCoordinates = DB::table('providers')
+            ->selectRaw('CASE WHEN coordinates IS NULL THEN NULL ELSE ST_AsText(coordinates) END AS coordinates_wkt')
+            ->where('id', $providerId)
+            ->value('coordinates_wkt');
+
+        $vendorCoordinates = DB::table('vendors')
+            ->selectRaw('CASE WHEN coordinates IS NULL THEN NULL ELSE ST_AsText(coordinates) END AS coordinates_wkt')
+            ->where('id', $vendorId)
+            ->value('coordinates_wkt');
+
+        return $providerCoordinates !== $vendorCoordinates;
     }
 }

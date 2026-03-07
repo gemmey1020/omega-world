@@ -1,0 +1,16 @@
+{
+    "sqltools.connections": [
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "OMEGA_DB_LOCAL",
+            "group": "OMEGA_WORLD",
+            "database": "omega_world",
+            "username": "postgres",
+            "password": ""
+        }
+    ]
+}

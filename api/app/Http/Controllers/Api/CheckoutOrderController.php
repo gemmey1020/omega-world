@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Checkout\StoreCheckoutOrderRequest;
 use App\Models\AnalyticsEvent;
-use App\Models\CustomerMetric;
 use App\Models\Order;
 use App\Models\OrderEvent;
 use App\Models\OrderItem;
@@ -13,11 +12,10 @@ use App\Models\Product;
 use App\Models\User;
 use App\Models\Vendor;
 use App\Models\VendorAnalytics;
-use Illuminate\Database\Query\Expression;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class CheckoutOrderController extends Controller
@@ -168,28 +166,7 @@ class CheckoutOrderController extends Controller
                 'search_query' => null,
             ]);
 
-            $customerMetric = CustomerMetric::query()->firstOrCreate(
-                ['user_id' => $customer->id],
-                [
-                    'lifetime_value' => 0,
-                    'order_count' => 0,
-                    'average_order_value' => 0,
-                    'delivery_success_rate' => 0,
-                    'cancellation_rate' => 0,
-                    'risk_flags_json' => [],
-                ]
-            );
-
-            $nextOrderCount = $customerMetric->order_count + 1;
-            $nextLifetimeValue = (float) $customerMetric->lifetime_value + $totalAmount;
-
-            $customerMetric->fill([
-                'lifetime_value' => $nextLifetimeValue,
-                'order_count' => $nextOrderCount,
-                'last_order_at' => $now,
-                'average_order_value' => $nextOrderCount > 0 ? $nextLifetimeValue / $nextOrderCount : 0,
-            ]);
-            $customerMetric->save();
+            $this->upsertCustomerMetrics($customer->id, $totalAmount, $now);
 
             return [
                 'order' => $order->fresh(),
@@ -237,36 +214,73 @@ class CheckoutOrderController extends Controller
 
     private function resolveCustomerUser(string $deviceHash, ?int $zoneId): User
     {
-        $user = User::withTrashed()
+        $timestamp = now()->toDateTimeString();
+
+        DB::statement(
+            <<<'SQL'
+            INSERT INTO users (device_hash, zone_id, created_at, updated_at, deleted_at)
+            VALUES (?, ?, ?, ?, NULL)
+            ON CONFLICT (device_hash) DO UPDATE SET
+                zone_id = COALESCE(users.zone_id, EXCLUDED.zone_id),
+                deleted_at = NULL,
+                updated_at = EXCLUDED.updated_at
+            WHERE users.deleted_at IS NOT NULL
+                OR (users.zone_id IS NULL AND EXCLUDED.zone_id IS NOT NULL)
+            SQL,
+            [$deviceHash, $zoneId, $timestamp, $timestamp]
+        );
+
+        return User::query()
             ->where('device_hash', $deviceHash)
-            ->first();
-
-        if ($user === null) {
-            return User::query()->create([
-                'device_hash' => $deviceHash,
-                'zone_id' => $zoneId,
-            ]);
-        }
-
-        if ($user->trashed()) {
-            $user->restore();
-        }
-
-        if ($user->zone_id === null && $zoneId !== null) {
-            $user->zone_id = $zoneId;
-            $user->save();
-        }
-
-        return $user;
+            ->firstOrFail();
     }
 
     private function generateOrderNumber(): string
     {
-        do {
-            $candidate = 'ORD-'.now()->format('YmdHis').'-'.Str::upper(Str::random(6));
-        } while (Order::query()->where('order_number', $candidate)->exists());
+        $row = DB::selectOne("SELECT nextval('order_number_seq') AS sequence_value");
+        $sequenceValue = (int) ($row->sequence_value ?? 0);
 
-        return $candidate;
+        return sprintf('ORD-%s-%06d', now()->format('Ymd'), $sequenceValue);
+    }
+
+    private function upsertCustomerMetrics(int $userId, float $totalAmount, Carbon $now): void
+    {
+        $amount = number_format($totalAmount, 2, '.', '');
+        $timestamp = $now->toDateTimeString();
+
+        DB::statement(
+            <<<'SQL'
+            INSERT INTO customer_metrics (
+                user_id,
+                lifetime_value,
+                order_count,
+                last_order_at,
+                average_order_value,
+                delivery_success_rate,
+                cancellation_rate,
+                risk_flags_json,
+                created_at,
+                updated_at
+            )
+            VALUES (?, ?, 1, ?, ?, 0, 0, ?::jsonb, ?, ?)
+            ON CONFLICT (user_id) DO UPDATE SET
+                lifetime_value = customer_metrics.lifetime_value + EXCLUDED.lifetime_value,
+                order_count = customer_metrics.order_count + 1,
+                last_order_at = EXCLUDED.last_order_at,
+                average_order_value = (customer_metrics.lifetime_value + EXCLUDED.lifetime_value)
+                    / (customer_metrics.order_count + 1),
+                updated_at = EXCLUDED.updated_at
+            SQL,
+            [
+                $userId,
+                $amount,
+                $timestamp,
+                $amount,
+                json_encode([], JSON_THROW_ON_ERROR),
+                $timestamp,
+                $timestamp,
+            ]
+        );
     }
 
     /**
@@ -321,32 +335,25 @@ class CheckoutOrderController extends Controller
      */
     private function syncPointColumn(string $table, string $column, int $id, ?array $point): void
     {
-        $query = DB::table($table)->where('id', $id);
+        $target = match ("{$table}.{$column}") {
+            'orders.delivery_point' => ['table' => 'orders', 'column' => 'delivery_point'],
+            default => throw new \InvalidArgumentException('Unsupported spatial target.'),
+        };
+        $timestamp = now()->toDateTimeString();
 
         if ($point === null) {
-            $query->update([
-                $column => null,
-                'updated_at' => now(),
-            ]);
+            DB::update(
+                "UPDATE {$target['table']} SET {$target['column']} = NULL, updated_at = ? WHERE id = ?",
+                [$timestamp, $id]
+            );
 
             return;
         }
-
-        $query->update([
-            $column => $this->makePointExpression($point),
-            'updated_at' => now(),
-        ]);
-    }
-
-    /**
-     * @param  array<string, mixed>  $point
-     */
-    private function makePointExpression(array $point): Expression
-    {
         [$lng, $lat] = $point['coordinates'];
-        $lng = number_format((float) $lng, 7, '.', '');
-        $lat = number_format((float) $lat, 7, '.', '');
 
-        return DB::raw("ST_SetSRID(ST_MakePoint({$lng}, {$lat}), 4326)");
+        DB::update(
+            "UPDATE {$target['table']} SET {$target['column']} = ST_SetSRID(ST_MakePoint(?, ?), 4326), updated_at = ? WHERE id = ?",
+            [(float) $lng, (float) $lat, $timestamp, $id]
+        );
     }
 }

@@ -9,7 +9,6 @@ use App\Http\Requests\Admin\UpdateProviderRequest;
 use App\Models\Provider;
 use App\Models\Vendor;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Query\Expression;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -158,33 +157,26 @@ class ProviderController extends Controller
      */
     private function syncPointColumn(string $table, string $column, int $id, ?array $point): void
     {
-        $query = DB::table($table)->where('id', $id);
+        $target = match ("{$table}.{$column}") {
+            'providers.coordinates' => ['table' => 'providers', 'column' => 'coordinates'],
+            default => throw new \InvalidArgumentException('Unsupported spatial target.'),
+        };
+        $timestamp = now()->toDateTimeString();
 
         if ($point === null) {
-            $query->update([
-                $column => null,
-                'updated_at' => now(),
-            ]);
+            DB::update(
+                "UPDATE {$target['table']} SET {$target['column']} = NULL, updated_at = ? WHERE id = ?",
+                [$timestamp, $id]
+            );
 
             return;
         }
-
-        $query->update([
-            $column => $this->makePointExpression($point),
-            'updated_at' => now(),
-        ]);
-    }
-
-    /**
-     * @param  array<string, mixed>  $point
-     */
-    private function makePointExpression(array $point): Expression
-    {
         [$lng, $lat] = $point['coordinates'];
-        $lng = number_format((float) $lng, 7, '.', '');
-        $lat = number_format((float) $lat, 7, '.', '');
 
-        return DB::raw("ST_SetSRID(ST_MakePoint({$lng}, {$lat}), 4326)");
+        DB::update(
+            "UPDATE {$target['table']} SET {$target['column']} = ST_SetSRID(ST_MakePoint(?, ?), 4326), updated_at = ? WHERE id = ?",
+            [(float) $lng, (float) $lat, $timestamp, $id]
+        );
     }
 
     /**
