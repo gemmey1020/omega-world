@@ -4,6 +4,7 @@ import KPICard from './kpi-card';
 import SLABreachCard from './sla-breach-card';
 import ZoneHealthTable from './zone-health-table';
 import EventFeed from './event-feed';
+import { BarChart3, CheckCircle, Package } from '@/lib/icons';
 
 export default function DashboardOverview() {
   return (
@@ -20,19 +21,19 @@ export default function DashboardOverview() {
           label="Orders Received"
           value="1,248"
           trend={{ direction: 'up', percentage: 12 }}
-          icon={<span className="text-3xl">📥</span>}
+          icon={<Package className="h-8 w-8 text-teal" />}
         />
         <KPICard
           label="Orders Dispatched"
           value="987"
           trend={{ direction: 'up', percentage: 8 }}
-          icon={<span className="text-3xl">📤</span>}
+          icon={<BarChart3 className="h-8 w-8 text-emerald" />}
         />
         <KPICard
           label="Deliveries Completed"
           value="764"
           trend={{ direction: 'up', percentage: 15 }}
-          icon={<span className="text-3xl">✅</span>}
+          icon={<CheckCircle className="h-8 w-8 text-emerald" />}
         />
       </div>
 

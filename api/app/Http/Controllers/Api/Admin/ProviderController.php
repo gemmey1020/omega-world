@@ -6,10 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ProviderIndexRequest;
 use App\Http\Requests\Admin\StoreProviderRequest;
 use App\Http\Requests\Admin\UpdateProviderRequest;
+use App\Models\Order;
 use App\Models\Provider;
 use App\Models\Vendor;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ProviderController extends Controller
@@ -18,6 +21,7 @@ class ProviderController extends Controller
     {
         $validated = $request->validated();
         $perPage = (int) ($validated['per_page'] ?? 25);
+        $includeOperationalMetrics = (bool) ($validated['include_operational_metrics'] ?? false);
 
         $query = Provider::query()
             ->select('providers.*')
@@ -27,6 +31,10 @@ class ProviderController extends Controller
                 'zone:id,name',
             ])
             ->orderBy('display_name');
+
+        if ($includeOperationalMetrics) {
+            $this->appendOperationalMetricSelects($query);
+        }
 
         if (isset($validated['type'])) {
             $query->where('type', $validated['type']);
@@ -184,6 +192,8 @@ class ProviderController extends Controller
      */
     private function transformProvider(Provider $provider): array
     {
+        $lastDispatchAt = $this->normalizeTimestamp($provider->getAttribute('last_dispatch_at'));
+
         return [
             'id' => $provider->id,
             'type' => $provider->type,
@@ -206,6 +216,12 @@ class ProviderController extends Controller
                 'id' => $provider->zone->id,
                 'name' => $provider->zone->name,
             ] : null,
+            'order_volume_24h' => $this->normalizeInteger($provider->getAttribute('order_volume_24h')),
+            'last_dispatch_at' => $lastDispatchAt?->toISOString(),
+            'efficiency_score' => $provider->getAttribute('efficiency_score') !== null
+                ? (float) $provider->getAttribute('efficiency_score')
+                : null,
+            'connection_status' => $this->resolveConnectionStatus($provider->status),
             'created_at' => $provider->created_at?->toISOString(),
             'updated_at' => $provider->updated_at?->toISOString(),
             'deleted_at' => $provider->deleted_at?->toISOString(),
@@ -225,5 +241,83 @@ class ProviderController extends Controller
             'from' => $paginator->firstItem(),
             'to' => $paginator->lastItem(),
         ];
+    }
+
+    private function appendOperationalMetricSelects(Builder $query): void
+    {
+        $last24Hours = now()->subDay();
+        $last7Days = now()->subDays(7);
+
+        $query->selectSub(
+            Order::query()
+                ->selectRaw('COUNT(*)')
+                ->whereColumn('orders.provider_id', 'providers.id')
+                ->where('orders.received_at', '>=', $last24Hours),
+            'order_volume_24h'
+        );
+
+        $query->selectSub(
+            Order::query()
+                ->selectRaw('MAX(COALESCE(orders.in_transit_at, orders.dispatched_at, orders.acknowledged_at, orders.received_at))')
+                ->whereColumn('orders.provider_id', 'providers.id'),
+            'last_dispatch_at'
+        );
+
+        $query->selectSub(
+            Order::query()
+                ->selectRaw(
+                    'CASE
+                        WHEN COUNT(*) = 0 THEN NULL
+                        ELSE ROUND(
+                            (
+                                SUM(CASE WHEN orders.sla_delivery_by IS NOT NULL AND orders.delivered_at <= orders.sla_delivery_by THEN 1 ELSE 0 END)::numeric
+                                / COUNT(*)
+                            ) * 100,
+                            2
+                        )
+                    END'
+                )
+                ->whereColumn('orders.provider_id', 'providers.id')
+                ->where('orders.status', Order::STATUS_DELIVERED)
+                ->whereNotNull('orders.delivered_at')
+                ->where('orders.delivered_at', '>=', $last7Days),
+            'efficiency_score'
+        );
+    }
+
+    private function resolveConnectionStatus(string $status): string
+    {
+        return match ($status) {
+            Provider::STATUS_ACTIVE => 'connected',
+            Provider::STATUS_PAUSED, Provider::STATUS_PENDING_SETUP => 'degraded',
+            Provider::STATUS_BLOCKED, Provider::STATUS_EXPIRED => 'disconnected',
+            default => 'degraded',
+        };
+    }
+
+    private function normalizeInteger(mixed $value): int
+    {
+        if (is_numeric($value)) {
+            return (int) $value;
+        }
+
+        return 0;
+    }
+
+    private function normalizeTimestamp(mixed $value): ?Carbon
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if ($value instanceof Carbon) {
+            return $value;
+        }
+
+        if (is_string($value)) {
+            return Carbon::parse($value);
+        }
+
+        return null;
     }
 }

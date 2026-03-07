@@ -4,6 +4,9 @@ use App\Http\Controllers\Api\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Api\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Api\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Api\Admin\ProviderController as AdminProviderController;
+use App\Http\Controllers\Api\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Api\Admin\StaffController as AdminStaffController;
+use App\Http\Controllers\Api\Admin\ZoneHealthController as AdminZoneHealthController;
 use App\Http\Controllers\Api\CheckoutOrderController;
 use App\Http\Controllers\Api\JoinLeadController;
 use App\Http\Controllers\Api\CartTokenController;
@@ -74,6 +77,9 @@ Route::prefix('admin')->group(function () use ($adminRoleMiddleware, $superAdmin
             Route::get('/orders/{order}', [AdminOrderController::class, 'show']);
             Route::get('/customers', [AdminCustomerController::class, 'index']);
             Route::get('/customers/{user}', [AdminCustomerController::class, 'show']);
+            Route::get('/staff', [AdminStaffController::class, 'index']);
+            Route::get('/zones/health', [AdminZoneHealthController::class, 'index']);
+            Route::get('/reports/sla-compliance', [AdminReportController::class, 'slaCompliance']);
         });
 
         Route::middleware('throttle:admin-write')->group(function (): void {

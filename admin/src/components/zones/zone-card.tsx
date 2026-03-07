@@ -1,96 +1,133 @@
 'use client';
 
 import React from 'react';
-import { Activity, AlertCircle, CheckCircle } from 'lucide-react';
+import { Activity, AlertCircle, CheckCircle } from '@/lib/icons';
+import { AdminZoneHealthModel } from '@/lib/admin-zone-types';
+import { useSlaTickerStore } from '@/stores/use-sla-ticker-store';
 
 interface ZoneCardProps {
-  zoneId: string;
-  zoneName: string;
-  activeOrders: number;
-  health: 'healthy' | 'warning' | 'critical';
-  mapSvg?: string;
+  zone: AdminZoneHealthModel;
 }
 
-function ZoneCardImpl({ zoneId, zoneName, activeOrders, health }: ZoneCardProps) {
+function formatMinutes(minutes: number | null): string {
+  if (minutes === null) {
+    return 'No data';
+  }
+
+  return `${Math.round(minutes)} min`;
+}
+
+function formatPercent(value: number | null): string {
+  if (value === null) {
+    return 'No data';
+  }
+
+  return `${value.toFixed(1)}%`;
+}
+
+function ZoneCardImpl({ zone }: ZoneCardProps) {
+  const now = useSlaTickerStore((state) => state.now);
+  const pulseEnabled = zone.status === 'critical'
+    ? Math.floor(now / 1000) % 2 === 0
+    : zone.status === 'degraded'
+      ? Math.floor(now / 2000) % 2 === 0
+      : false;
+
   const healthConfig = {
     healthy: {
-      color: 'text-emerald',
-      bgColor: 'bg-emerald/10',
-      borderColor: 'border-emerald/30',
+      accent: 'text-emerald',
+      border: 'border-emerald/30',
+      background: 'from-emerald/10 to-surface/70',
+      overlay: 'bg-emerald/5',
       icon: CheckCircle,
       label: 'Healthy',
     },
-    warning: {
-      color: 'text-yellow-400',
-      bgColor: 'bg-yellow-400/10',
-      borderColor: 'border-yellow-400/30',
+    degraded: {
+      accent: 'text-slate',
+      border: 'border-slate/40',
+      background: 'from-slate/15 to-surface/70',
+      overlay: 'bg-slate/10',
       icon: AlertCircle,
-      label: 'Warning',
+      label: 'Degraded',
     },
     critical: {
-      color: 'text-red',
-      bgColor: 'bg-red/10',
-      borderColor: 'border-red/30',
+      accent: 'text-red',
+      border: 'border-red/30',
+      background: 'from-red/10 to-surface/70',
+      overlay: 'bg-red/10',
       icon: AlertCircle,
       label: 'Critical',
     },
-  };
+  }[zone.status];
 
-  const config = healthConfig[health];
-  const HealthIcon = config.icon;
+  const HealthIcon = healthConfig.icon;
 
   return (
     <article
-      className={`group relative rounded-[18px] border p-6 backdrop-blur-lg transition-all duration-300 ${
-        config.borderColor
-      } ${config.bgColor} hover:shadow-lg hover:shadow-teal/20`}
+      className={`relative overflow-hidden rounded-[18px] border bg-gradient-to-br ${healthConfig.background} p-6 backdrop-blur-lg transition-shadow duration-300 hover:shadow-[0_18px_50px_rgba(0,255,209,0.08)] ${healthConfig.border}`}
     >
-      {/* Glassmorphic Overlay */}
-      <div className="absolute inset-0 rounded-[18px] bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+      <div
+        className={`pointer-events-none absolute inset-0 rounded-[18px] transition-opacity duration-500 ${healthConfig.overlay} ${
+          pulseEnabled ? 'opacity-100' : 'opacity-20'
+        }`}
+      />
 
-      <div className="relative space-y-4">
-        {/* Header */}
-        <div className="flex items-start justify-between">
+      <div className="relative space-y-5">
+        <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
-            <h3 className="text-sm font-semibold text-foreground">{zoneName}</h3>
-            <p className="text-xs text-slate">Zone ID: {zoneId}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate">
+              Zone {zone.id}
+            </p>
+            <h3 className="text-lg font-semibold text-foreground">{zone.name}</h3>
+            <p className="text-xs text-slate">
+              {zone.coordinates ? 'Geo-linked coverage shape attached' : 'No spatial geometry available'}
+            </p>
           </div>
-          <div className={`${config.color}`}>
-            <HealthIcon className="w-5 h-5" />
+          <div className={`omega-badge inline-flex items-center gap-2 border px-3 py-2 ${healthConfig.border} bg-navy/60`}>
+            <HealthIcon className={`h-4 w-4 ${healthConfig.accent}`} />
+            <span className={`text-xs font-semibold uppercase tracking-[0.12em] ${healthConfig.accent}`}>
+              {healthConfig.label}
+            </span>
           </div>
         </div>
 
-        {/* Map Placeholder */}
-        <div className="h-32 rounded-[10px] bg-gradient-to-br from-teal/20 to-transparent border border-teal/20 flex items-center justify-center">
-          <svg
-            className="w-16 h-16 text-teal/40"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-          </svg>
+        <div className="rounded-[10px] border border-teal/15 bg-navy/60 px-4 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-[10px] border border-teal/20 bg-teal/10">
+              <Activity className="h-5 w-5 text-teal" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate">Live load</p>
+              <p className="text-2xl font-bold text-teal">{zone.activeOrders}</p>
+              <p className="text-xs text-slate">
+                {zone.breachCount} active breach{zone.breachCount === 1 ? '' : 'es'} across this zone
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-[10px] bg-navy/50 p-3 border border-teal/10">
-            <p className="text-xs text-slate mb-1">Active Orders</p>
-            <p className="text-lg font-bold text-teal">{activeOrders}</p>
+          <div className="rounded-[10px] border border-border bg-surface/70 p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-slate">SLA Compliance</p>
+            <p className="mt-2 text-lg font-semibold text-foreground">{formatPercent(zone.slaCompliancePercent)}</p>
           </div>
-          <div className="rounded-[10px] bg-navy/50 p-3 border border-teal/10">
-            <p className="text-xs text-slate mb-1">Status</p>
-            <p className={`text-xs font-semibold uppercase tracking-wide ${config.color}`}>
-              {config.label}
+          <div className="rounded-[10px] border border-border bg-surface/70 p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-slate">Avg Delivery</p>
+            <p className="mt-2 text-lg font-semibold text-foreground">{formatMinutes(zone.avgDeliveryMinutes)}</p>
+          </div>
+          <div className="rounded-[10px] border border-border bg-surface/70 p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-slate">Manual Interventions</p>
+            <p className={`mt-2 text-lg font-semibold ${zone.manualInterventionCount > 0 ? 'text-red' : 'text-foreground'}`}>
+              {zone.manualInterventionCount}
+            </p>
+          </div>
+          <div className="rounded-[10px] border border-border bg-surface/70 p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-slate">Breach Pressure</p>
+            <p className={`mt-2 text-lg font-semibold ${zone.breachCount > 0 ? healthConfig.accent : 'text-foreground'}`}>
+              {zone.breachCount}
             </p>
           </div>
         </div>
-
-        {/* Neon Pulse Effect for Critical */}
-        {health === 'critical' && (
-          <div className="absolute inset-0 rounded-[18px] animate-pulse bg-red/5" />
-        )}
       </div>
     </article>
   );

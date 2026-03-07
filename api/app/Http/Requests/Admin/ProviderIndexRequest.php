@@ -24,6 +24,7 @@ class ProviderIndexRequest extends FormRequest
             'zone_id' => ['sometimes', 'integer', Rule::exists('zones', 'id')->whereNull('deleted_at')],
             'vendor_id' => ['sometimes', 'integer', Rule::exists('vendors', 'id')->whereNull('deleted_at')],
             'search' => ['sometimes', 'string', 'max:255'],
+            'include_operational_metrics' => ['sometimes', 'boolean'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
         ];
     }

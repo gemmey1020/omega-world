@@ -1,3 +1,6 @@
+import React from 'react';
+import { AlertCircle, CheckCircle, Package, Settings2 } from '@/lib/icons';
+
 interface Event {
   id: string;
   type: 'order' | 'delivery' | 'alert' | 'system';
@@ -75,10 +78,10 @@ const mockEvents: Event[] = [
 
 function getEventIcon(type: Event['type']) {
   return {
-    order: '📦',
-    delivery: '✅',
-    alert: '⚠️',
-    system: '⚙️',
+    order: Package,
+    delivery: CheckCircle,
+    alert: AlertCircle,
+    system: Settings2,
   }[type];
 }
 
@@ -105,8 +108,10 @@ export default function EventFeed() {
             key={event.id}
             className="px-6 py-3.5 hover:bg-navy/50 transition-colors h-11 flex items-center gap-4"
           >
-            <div className={`text-lg flex-shrink-0 w-6 ${getEventColor(event.type)}`}>
-              {getEventIcon(event.type)}
+            <div className={`flex-shrink-0 w-6 ${getEventColor(event.type)}`}>
+              {React.createElement(getEventIcon(event.type), {
+                className: 'h-5 w-5',
+              })}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">

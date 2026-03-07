@@ -2,7 +2,8 @@
 
 import { startTransition, useCallback, useEffect, useRef, useState } from 'react';
 import OrdersVirtualList from '@/components/orders/orders-virtual-list';
-import { fetchAdminOrdersPage } from '@/lib/admin-api';
+import OmegaErrorPanel from '@/components/shared/omega-error-panel';
+import { AdminApiError, fetchAdminOrdersPage } from '@/lib/admin-api';
 import { AdminOrderRowModel, AdminOrdersMeta } from '@/lib/admin-order-types';
 
 const PAGE_SIZE = 100;
@@ -10,7 +11,7 @@ const PAGE_SIZE = 100;
 export default function OrdersPageClient() {
   const [orders, setOrders] = useState<AdminOrderRowModel[]>([]);
   const [meta, setMeta] = useState<AdminOrdersMeta | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<AdminApiError | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const nextPageRef = useRef(1);
@@ -58,7 +59,11 @@ export default function OrdersPageClient() {
         });
       } catch (caughtError) {
         if (!abortController.signal.aborted) {
-          setError(caughtError instanceof Error ? caughtError.message : 'Failed to load orders.');
+          setError(
+            caughtError instanceof AdminApiError
+              ? caughtError
+              : new AdminApiError('Failed to load orders.', 500),
+          );
         }
       } finally {
         if (!abortController.signal.aborted) {
@@ -85,7 +90,11 @@ export default function OrdersPageClient() {
     try {
       await loadPage(nextPageRef.current, false);
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Failed to load more orders.');
+      setError(
+        caughtError instanceof AdminApiError
+          ? caughtError
+          : new AdminApiError('Failed to load more orders.', 500),
+      );
     } finally {
       setIsLoadingMore(false);
     }
@@ -112,9 +121,10 @@ export default function OrdersPageClient() {
       </div>
 
       {error && (
-        <div className="rounded-[18px] border border-red/30 bg-red/10 px-4 py-3 text-sm text-red">
-          {error}
-        </div>
+        <OmegaErrorPanel
+          status={error.status}
+          message={error.message}
+        />
       )}
 
       {isInitialLoading ? (

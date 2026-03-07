@@ -1,10 +1,10 @@
 import { NextRequest } from 'next/server';
 import { proxyAdminRequest } from '@/lib/server/admin-proxy';
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   return proxyAdminRequest({
-    path: '/api/admin/orders',
+    path: '/api/admin/auth/register',
     request,
-    method: 'GET',
+    method: 'POST',
   });
 }

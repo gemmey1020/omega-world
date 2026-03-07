@@ -1,6 +1,6 @@
 'use client';
 
-import { MagnifyingGlassIcon, BellIcon, GearIcon } from '@radix-ui/react-icons';
+import { Bell, Search, Settings2 } from '@/lib/icons';
 
 export default function TopBar() {
   return (
@@ -19,11 +19,11 @@ export default function TopBar() {
         {/* Search Bar */}
         <div className="flex-1 max-w-xs mx-auto hidden md:flex">
           <div className="relative w-full">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate pointer-events-none" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate pointer-events-none" />
             <input
               type="text"
               placeholder="Search operations..."
-              className="w-full pl-10 pr-4 h-10 rounded-[10px] bg-navy border border-border text-foreground placeholder-slate text-sm focus:outline-none focus:border-emerald focus:ring-1 focus:ring-emerald/50"
+              className="omega-control w-full border border-border bg-navy pl-11 pr-4 text-sm text-foreground placeholder-slate focus:outline-none focus:border-emerald focus:ring-1 focus:ring-emerald/50"
               aria-label="Search operations"
             />
           </div>
@@ -32,18 +32,18 @@ export default function TopBar() {
         {/* Right Actions */}
         <div className="flex items-center gap-3">
           <button
-            className="w-10 h-10 rounded-[10px] flex items-center justify-center text-slate hover:text-foreground hover:bg-navy transition-colors"
+            className="omega-control inline-flex min-h-[56px] min-w-[56px] items-center justify-center border border-border bg-navy text-slate transition-colors hover:text-foreground hover:bg-navy/80"
             aria-label="Notifications"
           >
-            <BellIcon className="w-5 h-5" />
+            <Bell className="h-5 w-5" />
           </button>
           <button
-            className="w-10 h-10 rounded-[10px] flex items-center justify-center text-slate hover:text-foreground hover:bg-navy transition-colors"
+            className="omega-control inline-flex min-h-[56px] min-w-[56px] items-center justify-center border border-border bg-navy text-slate transition-colors hover:text-foreground hover:bg-navy/80"
             aria-label="Settings"
           >
-            <GearIcon className="w-5 h-5" />
+            <Settings2 className="h-5 w-5" />
           </button>
-          <div className="w-10 h-10 rounded-[10px] bg-gradient-to-br from-emerald to-slate flex items-center justify-center flex-shrink-0">
+          <div className="omega-control flex min-h-[56px] min-w-[56px] items-center justify-center rounded-[var(--radius-primary)] bg-gradient-to-br from-emerald to-slate flex-shrink-0">
             <span className="text-navy font-semibold text-xs">AD</span>
           </div>
         </div>

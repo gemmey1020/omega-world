@@ -19,8 +19,6 @@
   --color-success: var(--color-emerald);
   --color-error: var(--color-red);
   --color-info: #3b82f6;
-  --color-warning: var(--color-red);
-  
   /* Interactive States */
   --color-interactive: var(--color-teal);
   --color-interactive-glow: var(--color-teal-neon);
@@ -51,6 +49,27 @@ html {
 body {
   @apply bg-background text-foreground antialiased;
   font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+.omega-control {
+  min-height: var(--height-touch);
+  border-radius: var(--radius-primary);
+}
+
+.omega-badge {
+  border-radius: var(--radius-secondary);
+}
+
+.omega-error-panel {
+  border-radius: var(--radius-primary);
+  border: 1px solid color-mix(in srgb, var(--color-red) 35%, transparent);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--color-red) 14%, transparent), transparent 65%),
+    color-mix(in srgb, var(--color-red) 7%, var(--color-surface));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-red) 12%, transparent),
+    0 0 28px color-mix(in srgb, var(--color-red) 15%, transparent);
+  padding: 1.25rem;
 }
 
 /* Disable animations for reduced motion */

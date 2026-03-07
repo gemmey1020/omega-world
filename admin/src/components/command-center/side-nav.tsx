@@ -1,31 +1,42 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronLeftIcon, ChevronRightIcon } from '@radix-ui/react-icons';
+import {
+  BarChart3,
+  Building2,
+  ChevronLeft,
+  ChevronRight,
+  LayoutDashboard,
+  Map,
+  MapPinned,
+  Package,
+  Settings2,
+  Users,
+} from '@/lib/icons';
 import NavLink from './nav-link';
 
 const navSections = [
   {
     title: 'Overview',
     items: [
-      { label: 'Dashboard', icon: '📊', href: '/' },
-      { label: 'Real-time Map', icon: '🗺️', href: '/map' },
+      { label: 'Dashboard', icon: LayoutDashboard, href: '/' },
+      { label: 'Real-time Map', icon: Map, href: '/map' },
     ],
   },
   {
     title: 'Operations',
     items: [
-      { label: 'Orders', icon: '📦', href: '/orders' },
-      { label: 'Zones', icon: '🔲', href: '/zones' },
-      { label: 'Vendors', icon: '🏢', href: '/vendors' },
+      { label: 'Orders', icon: Package, href: '/orders' },
+      { label: 'Zones', icon: MapPinned, href: '/zones' },
+      { label: 'Vendors', icon: Building2, href: '/vendors' },
     ],
   },
   {
     title: 'Management',
     items: [
-      { label: 'Users', icon: '👥', href: '/users' },
-      { label: 'Reports', icon: '📈', href: '/reports' },
-      { label: 'Settings', icon: '⚙️', href: '/settings' },
+      { label: 'Users', icon: Users, href: '/users' },
+      { label: 'Reports', icon: BarChart3, href: '/reports' },
+      { label: 'Settings', icon: Settings2, href: '/settings' },
     ],
   },
 ];
@@ -69,13 +80,13 @@ export default function SideNav() {
         <div className="border-t border-border p-3">
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="w-full h-10 rounded-[10px] flex items-center justify-center text-slate hover:text-foreground hover:bg-surface transition-colors"
+            className="omega-control inline-flex w-full items-center justify-center border border-border text-slate hover:text-foreground hover:bg-surface transition-colors"
             aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {isCollapsed ? (
-              <ChevronRightIcon className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4" />
             ) : (
-              <ChevronLeftIcon className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4" />
             )}
           </button>
         </div>

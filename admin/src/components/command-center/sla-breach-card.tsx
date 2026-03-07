@@ -1,4 +1,4 @@
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
+import { TriangleAlert } from '@/lib/icons';
 interface SLABreachCardProps {
   count: number;
   percentage: number;
@@ -13,7 +13,7 @@ export default function SLABreachCard({
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <ExclamationTriangleIcon className="w-5 h-5 text-red flex-shrink-0" />
+            <TriangleAlert className="w-5 h-5 text-red flex-shrink-0" />
             <p className="text-sm font-medium text-red">Active SLA Breaches</p>
           </div>
           <p className="text-3xl font-bold text-red">{count}</p>

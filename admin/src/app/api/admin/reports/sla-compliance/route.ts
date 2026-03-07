@@ -3,7 +3,7 @@ import { proxyAdminRequest } from '@/lib/server/admin-proxy';
 
 export async function GET(request: NextRequest) {
   return proxyAdminRequest({
-    path: '/api/admin/orders',
+    path: '/api/admin/reports/sla-compliance',
     request,
     method: 'GET',
   });
