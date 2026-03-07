@@ -53,7 +53,7 @@ const mockZones: Zone[] = [
 function getStatusBadge(status: Zone['status']) {
   return {
     healthy: { bg: 'bg-emerald/10', text: 'text-emerald', label: 'Healthy' },
-    degraded: { bg: 'bg-warning/10', text: 'text-warning', label: 'Degraded' },
+    degraded: { bg: 'bg-slate/10', text: 'text-slate', label: 'Degraded' },
     critical: { bg: 'bg-red/10', text: 'text-red', label: 'Critical' },
   }[status];
 }
@@ -117,7 +117,7 @@ export default function ZoneHealthTable() {
                         zone.satisfactionScore >= 95
                           ? 'text-emerald'
                           : zone.satisfactionScore >= 85
-                          ? 'text-warning'
+                          ? 'text-slate'
                           : 'text-red'
                       }`}
                     >

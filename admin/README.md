@@ -40,14 +40,13 @@ admin/
 ### Installation
 
 ```bash
-cd admin
-npm install
+pnpm install
 ```
 
 ### Development
 
 ```bash
-npm run dev
+pnpm --filter omega-command-center dev
 ```
 
 The application will start at `http://localhost:3001`.
@@ -55,8 +54,8 @@ The application will start at `http://localhost:3001`.
 ### Build
 
 ```bash
-npm run build
-npm start
+pnpm --filter omega-command-center build
+pnpm --filter omega-command-center start
 ```
 
 ## Features
@@ -99,7 +98,7 @@ Currently using in-component mock data. Future integration points:
 
 - [ ] API integration with Laravel 12 headless backend
 - [ ] Real-time updates using WebSockets
-- [ ] Virtual scrolling with @tanstack/react-virtual
+- [ ] Virtualized data tables with @tanstack/react-virtual
 - [ ] User authentication and role-based access
 - [ ] Advanced filtering and search
 - [ ] Analytics and reporting sections

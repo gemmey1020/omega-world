@@ -20,7 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
         __DIR__.'/../app/Console/Commands',
     ])
     ->withMiddleware(function (Middleware $middleware) use ($trustedProxies): void {
+        $middleware->web(prepend: [
+            \App\Http\Middleware\ResolveSessionCookieName::class,
+        ]);
+
         $middleware->api(prepend: [
+            \App\Http\Middleware\ResolveSessionCookieName::class,
             \Illuminate\Http\Middleware\HandleCors::class,
         ]);
 

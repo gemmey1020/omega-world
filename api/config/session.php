@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Str;
-
 return [
 
     /*
@@ -127,10 +125,16 @@ return [
     |
     */
 
-    'cookie' => env(
-        'SESSION_COOKIE',
-        Str::slug((string) env('APP_NAME', 'laravel')).'-session'
-    ),
+    'cookie' => env('SESSION_COOKIE', 'omega_session'),
+
+    'public_cookie' => env('SESSION_COOKIE', 'omega_session'),
+
+    'admin_cookie' => env('ADMIN_SESSION_COOKIE', 'omega_admin_session'),
+
+    'admin_origins' => array_values(array_filter(array_map(
+        static fn (string $origin): string => trim($origin),
+        explode(',', (string) env('ADMIN_SESSION_ORIGINS', 'http://localhost:3001'))
+    ), static fn (string $origin): bool => $origin !== '')),
 
     /*
     |--------------------------------------------------------------------------

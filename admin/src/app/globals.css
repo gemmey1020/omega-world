@@ -15,13 +15,14 @@
   
   /* Status Colors */
   --color-success: var(--color-emerald);
-  --color-warning: #f59e0b;
   --color-error: var(--color-red);
   --color-info: #3b82f6;
   
   /* Radii */
-  --radius-sm: 10px;
-  --radius-md: 18px;
+  --radius-primary: 18px;
+  --radius-secondary: 10px;
+  --radius-sm: var(--radius-secondary);
+  --radius-md: var(--radius-primary);
   --radius-lg: 24px;
   
   /* Font System */

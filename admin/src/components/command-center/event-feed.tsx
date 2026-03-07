@@ -86,7 +86,7 @@ function getEventColor(type: Event['type']) {
   return {
     order: 'text-blue-400',
     delivery: 'text-emerald',
-    alert: 'text-warning',
+    alert: 'text-red',
     system: 'text-slate',
   }[type];
 }
@@ -105,7 +105,7 @@ export default function EventFeed() {
             key={event.id}
             className="px-6 py-3.5 hover:bg-navy/50 transition-colors h-11 flex items-center gap-4"
           >
-            <div className="text-lg flex-shrink-0 w-6">
+            <div className={`text-lg flex-shrink-0 w-6 ${getEventColor(event.type)}`}>
               {getEventIcon(event.type)}
             </div>
             <div className="flex-1 min-w-0">
