@@ -86,6 +86,11 @@ class Provider extends Model
         return $this->belongsTo(Zone::class);
     }
 
+    public function slaProfile(): BelongsTo
+    {
+        return $this->belongsTo(SlaProfile::class);
+    }
+
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);

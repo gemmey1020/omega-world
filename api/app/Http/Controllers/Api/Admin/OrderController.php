@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Exceptions\DispatchStateException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\OrderIndexRequest;
 use App\Models\DispatchAssignment;
@@ -9,11 +10,46 @@ use App\Models\Order;
 use App\Models\OrderEvent;
 use App\Models\OrderItem;
 use App\Models\ProviderNotification;
+use App\Services\Dispatch\OrderDispatchService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
+    public function markInTransit(Request $request, Order $order, OrderDispatchService $orderDispatchService): JsonResponse
+    {
+        try {
+            $orderDispatchService->markInTransit($order->id, $request->user('admin')?->id);
+        } catch (DispatchStateException $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+                'current_state' => $exception->context,
+            ], 409);
+        }
+
+        return response()->json([
+            'data' => $this->transformOrderDetail($this->loadOrder($order->id)),
+        ]);
+    }
+
+    public function markDelivered(Request $request, Order $order, OrderDispatchService $orderDispatchService): JsonResponse
+    {
+        try {
+            $orderDispatchService->markDelivered($order->id, $request->user('admin')?->id);
+        } catch (DispatchStateException $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+                'current_state' => $exception->context,
+            ], 409);
+        }
+
+        return response()->json([
+            'data' => $this->transformOrderDetail($this->loadOrder($order->id)),
+        ]);
+    }
+
     public function index(OrderIndexRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -21,12 +57,13 @@ class OrderController extends Controller
 
         $query = Order::query()
             ->select('orders.*')
-            ->selectRaw('CASE WHEN orders.delivery_point IS NULL THEN NULL ELSE ST_AsGeoJSON(orders.delivery_point) END as delivery_point_geojson')
+            ->selectRaw($this->deliveryPointSelectExpression())
             ->with([
                 'provider:id,display_name',
                 'vendor:id,name',
                 'customer:id,name,email,phone,device_hash,zone_id',
                 'zone:id,name',
+                'latestDispatchAssignment:id,order_id,status,attempt_no,ack_deadline_at,assigned_at',
             ])
             ->withCount('items')
             ->orderByDesc('received_at')
@@ -97,7 +134,7 @@ class OrderController extends Controller
     {
         return Order::query()
             ->select('orders.*')
-            ->selectRaw('CASE WHEN orders.delivery_point IS NULL THEN NULL ELSE ST_AsGeoJSON(orders.delivery_point) END as delivery_point_geojson')
+            ->selectRaw($this->deliveryPointSelectExpression())
             ->with([
                 'provider:id,display_name',
                 'vendor:id,name,whatsapp_number',
@@ -111,6 +148,7 @@ class OrderController extends Controller
                 'notifications.dispatchAssignment:id,order_id,provider_id,attempt_no',
                 'events.actorUser:id,name,email',
                 'events.dispatchAssignment:id,order_id,provider_id,attempt_no',
+                'latestDispatchAssignment:id,order_id,status,attempt_no,ack_deadline_at,assigned_at',
             ])
             ->findOrFail($orderId);
     }
@@ -134,6 +172,7 @@ class OrderController extends Controller
             'total_amount' => (float) $order->total_amount,
             'items_count' => $order->items_count,
             'received_at' => $order->received_at?->toISOString(),
+            'ack_deadline_at' => $order->latestDispatchAssignment?->ack_deadline_at?->toISOString(),
             'sla_dispatch_by' => $order->sla_dispatch_by?->toISOString(),
             'sla_delivery_by' => $order->sla_delivery_by?->toISOString(),
             'needs_manual_intervention' => (bool) $order->needs_manual_intervention,
@@ -196,6 +235,7 @@ class OrderController extends Controller
                     'status' => $assignment->status,
                     'attempt_no' => $assignment->attempt_no,
                     'assigned_at' => $assignment->assigned_at?->toISOString(),
+                    'ack_deadline_at' => $assignment->ack_deadline_at?->toISOString(),
                     'acknowledged_at' => $assignment->acknowledged_at?->toISOString(),
                     'rejected_at' => $assignment->rejected_at?->toISOString(),
                     'timed_out_at' => $assignment->timed_out_at?->toISOString(),
@@ -270,5 +310,14 @@ class OrderController extends Controller
             'from' => $paginator->firstItem(),
             'to' => $paginator->lastItem(),
         ];
+    }
+
+    private function deliveryPointSelectExpression(): string
+    {
+        if (DB::getDriverName() !== 'pgsql') {
+            return 'NULL as delivery_point_geojson';
+        }
+
+        return 'CASE WHEN orders.delivery_point IS NULL THEN NULL ELSE ST_AsGeoJSON(orders.delivery_point) END as delivery_point_geojson';
     }
 }

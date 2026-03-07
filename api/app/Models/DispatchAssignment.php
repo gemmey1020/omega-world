@@ -30,6 +30,7 @@ class DispatchAssignment extends Model
         'attempt_no',
         'assigned_by_user_id',
         'assigned_at',
+        'ack_deadline_at',
         'acknowledged_at',
         'rejected_at',
         'timed_out_at',
@@ -45,6 +46,7 @@ class DispatchAssignment extends Model
     {
         return [
             'assigned_at' => 'datetime',
+            'ack_deadline_at' => 'datetime',
             'acknowledged_at' => 'datetime',
             'rejected_at' => 'datetime',
             'timed_out_at' => 'datetime',

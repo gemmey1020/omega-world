@@ -6,12 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Checkout\StoreCheckoutOrderRequest;
 use App\Models\AnalyticsEvent;
 use App\Models\Order;
-use App\Models\OrderEvent;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\Vendor;
 use App\Models\VendorAnalytics;
+use App\Services\Dispatch\OrderDispatchService;
+use App\Services\Dispatch\OrderEventRecorder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Carbon;
@@ -20,6 +21,12 @@ use Illuminate\Validation\ValidationException;
 
 class CheckoutOrderController extends Controller
 {
+    public function __construct(
+        private readonly OrderDispatchService $orderDispatchService,
+        private readonly OrderEventRecorder $orderEventRecorder,
+    ) {
+    }
+
     public function store(StoreCheckoutOrderRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -127,18 +134,23 @@ class CheckoutOrderController extends Controller
                 $order->items()->create($itemPayload);
             }
 
-            $order->events()->create([
-                'actor_user_id' => $customer->id,
-                'dispatch_assignment_id' => null,
-                'event_type' => 'order.received',
-                'from_status' => null,
-                'to_status' => Order::STATUS_RECEIVED,
-                'happened_at' => $now,
-                'notes' => 'Checkout order captured from public PWA.',
-                'metadata_json' => [
+            $this->orderEventRecorder->record(
+                $order,
+                'order.received',
+                null,
+                Order::STATUS_RECEIVED,
+                [
                     'source_channel' => $order->source_channel,
+                    'item_count' => $requestedItems->count(),
+                    'total_amount' => round($totalAmount, 2),
                 ],
-            ]);
+                $customer->id,
+                null,
+                $now,
+                'Checkout order captured from public PWA.',
+            );
+
+            $this->orderDispatchService->assignNewOrder($order->id, null, true);
 
             AnalyticsEvent::query()->create([
                 'user_id' => $customer->id,
@@ -169,7 +181,7 @@ class CheckoutOrderController extends Controller
             $this->upsertCustomerMetrics($customer->id, $totalAmount, $now);
 
             return [
-                'order' => $order->fresh(),
+                'order' => $order->fresh(['latestDispatchAssignment']),
                 'redirect_url' => $this->buildWhatsAppRedirectUrl(
                     (string) $vendor->whatsapp_number,
                     $vendor->name,

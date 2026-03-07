@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Provider;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -15,9 +16,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(SlaProfileSeeder::class);
+
         DB::transaction(function (): void {
             $now = now();
             $expiresAt = now()->addDays(30);
+            $retailSlaProfileId = (int) DB::table('sla_profiles')
+                ->where('type', 'retail')
+                ->value('id');
 
             $allowedReasonCodes = [
                 'SUBSCRIPTION_EXPIRED',
@@ -62,6 +68,7 @@ class DatabaseSeeder extends Seeder
                 if ($existingId) {
                     DB::table('zones')->where('id', $existingId)->update([
                         'coordinates' => DB::raw("ST_SetSRID(ST_MakePoint({$zone['lng']}, {$zone['lat']}), 4326)"),
+                        'default_sla_profile_id' => $retailSlaProfileId,
                         'deleted_at' => null,
                         'updated_at' => $now,
                     ]);
@@ -73,6 +80,7 @@ class DatabaseSeeder extends Seeder
                 $zoneIds[$zone['key']] = (int) DB::table('zones')->insertGetId([
                     'name' => $zone['name'],
                     'coordinates' => DB::raw("ST_SetSRID(ST_MakePoint({$zone['lng']}, {$zone['lat']}), 4326)"),
+                    'default_sla_profile_id' => $retailSlaProfileId,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]);
@@ -99,10 +107,14 @@ class DatabaseSeeder extends Seeder
                 ],
             ];
 
-            $vendorIds = [];
+            $seededVendors = [];
 
             foreach ($vendors as $vendor) {
-                $existingId = DB::table('vendors')->where('config_url', $vendor['config_url'])->value('id');
+                $existingVendor = DB::table('vendors')
+                    ->select(['id', 'provider_id'])
+                    ->where('config_url', $vendor['config_url'])
+                    ->first();
+                $existingId = (int) ($existingVendor->id ?? 0);
 
                 if ($existingId) {
                     DB::table('vendors')->where('id', $existingId)->update([
@@ -110,37 +122,93 @@ class DatabaseSeeder extends Seeder
                         'name' => $vendor['name'],
                         'whatsapp_number' => $vendor['whatsapp_number'],
                         'coordinates' => DB::raw("ST_SetSRID(ST_MakePoint({$vendor['lng']}, {$vendor['lat']}), 4326)"),
-                        'is_active' => true,
+                        'is_active' => false,
                         'deleted_at' => null,
                         'updated_at' => $now,
                     ]);
 
-                    $vendorIds[] = (int) $existingId;
+                    $seededVendors[] = [
+                        'vendor_id' => $existingId,
+                        'zone_id' => $zoneIds[$vendor['zone_key']],
+                        'name' => $vendor['name'],
+                        'whatsapp_number' => $vendor['whatsapp_number'],
+                    ];
                     continue;
                 }
 
-                $vendorIds[] = (int) DB::table('vendors')->insertGetId([
+                $vendorId = (int) DB::table('vendors')->insertGetId([
                     'zone_id' => $zoneIds[$vendor['zone_key']],
                     'name' => $vendor['name'],
                     'whatsapp_number' => $vendor['whatsapp_number'],
                     'config_url' => $vendor['config_url'],
                     'coordinates' => DB::raw("ST_SetSRID(ST_MakePoint({$vendor['lng']}, {$vendor['lat']}), 4326)"),
-                    'is_active' => true,
+                    'is_active' => false,
                     'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+
+                $seededVendors[] = [
+                    'vendor_id' => $vendorId,
+                    'zone_id' => $zoneIds[$vendor['zone_key']],
+                    'name' => $vendor['name'],
+                    'whatsapp_number' => $vendor['whatsapp_number'],
+                ];
+            }
+
+            foreach ($seededVendors as $vendor) {
+                $existingProviderId = DB::table('providers')
+                    ->where('vendor_id', $vendor['vendor_id'])
+                    ->value('id');
+
+                if ($existingProviderId) {
+                    DB::table('providers')->where('id', $existingProviderId)->update([
+                        'type' => Provider::TYPE_MERCHANT,
+                        'zone_id' => $vendor['zone_id'],
+                        'display_name' => $vendor['name'],
+                        'primary_contact_phone' => null,
+                        'whatsapp_number' => $vendor['whatsapp_number'],
+                        'status' => Provider::STATUS_ACTIVE,
+                        'sla_profile_id' => $retailSlaProfileId,
+                        'metadata_json' => json_encode(['source' => 'database_seeder'], JSON_THROW_ON_ERROR),
+                        'deleted_at' => null,
+                        'updated_at' => $now,
+                    ]);
+
+                    $providerId = (int) $existingProviderId;
+                } else {
+                    $providerId = (int) DB::table('providers')->insertGetId([
+                        'type' => Provider::TYPE_MERCHANT,
+                        'vendor_id' => $vendor['vendor_id'],
+                        'zone_id' => $vendor['zone_id'],
+                        'display_name' => $vendor['name'],
+                        'primary_contact_phone' => null,
+                        'whatsapp_number' => $vendor['whatsapp_number'],
+                        'status' => Provider::STATUS_ACTIVE,
+                        'sla_profile_id' => $retailSlaProfileId,
+                        'escalation_policy_id' => null,
+                        'metadata_json' => json_encode(['source' => 'database_seeder'], JSON_THROW_ON_ERROR),
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+                }
+
+                DB::table('vendors')->where('id', $vendor['vendor_id'])->update([
+                    'provider_id' => $providerId,
+                    'is_active' => true,
                     'updated_at' => $now,
                 ]);
             }
 
             $subscriptionRows = array_map(
-                fn (int $vendorId): array => [
-                    'vendor_id' => $vendorId,
+                fn (array $vendor): array => [
+                    'vendor_id' => $vendor['vendor_id'],
                     'status' => 'active',
                     'reason' => $subscriptionReason,
                     'expires_at' => $expiresAt,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ],
-                $vendorIds
+                $seededVendors
             );
 
             DB::table('vendor_subscriptions')->upsert(

@@ -41,7 +41,7 @@ class UpdateProviderRequest extends FormRequest
             'coordinates.coordinates.0' => ['required_with:coordinates.coordinates', 'numeric', 'between:-180,180'],
             'coordinates.coordinates.1' => ['required_with:coordinates.coordinates', 'numeric', 'between:-90,90'],
             'capabilities_json' => ['sometimes', 'nullable', 'array'],
-            'sla_profile_id' => ['sometimes', 'nullable', 'integer', 'min:1'],
+            'sla_profile_id' => ['sometimes', 'nullable', 'integer', Rule::exists('sla_profiles', 'id')],
             'escalation_policy_id' => ['sometimes', 'nullable', 'integer', 'min:1'],
             'metadata_json' => ['sometimes', 'nullable', 'array'],
         ];

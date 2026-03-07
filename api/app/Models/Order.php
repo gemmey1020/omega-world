@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Order extends Model
 {
@@ -30,6 +31,14 @@ class Order extends Model
     public const STATUS_FAILED = 'failed';
 
     public const STATUS_MANUAL_INTERVENTION_REQUIRED = 'manual_intervention_required';
+
+    public const ESCALATION_WHATSAPP = 'whatsapp';
+
+    public const ESCALATION_SMS = 'sms';
+
+    public const ESCALATION_PHONE = 'phone';
+
+    public const ESCALATION_MANUAL = 'manual';
 
     protected $fillable = [
         'order_number',
@@ -131,6 +140,11 @@ class Order extends Model
     public function dispatchAssignments(): HasMany
     {
         return $this->hasMany(DispatchAssignment::class);
+    }
+
+    public function latestDispatchAssignment(): HasOne
+    {
+        return $this->hasOne(DispatchAssignment::class)->latestOfMany('attempt_no');
     }
 
     public function notifications(): HasMany

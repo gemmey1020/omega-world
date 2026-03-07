@@ -16,6 +16,12 @@ class ProviderNotification extends Model
 
     public const CHANNEL_PHONE = 'phone';
 
+    public const STATUS_SENT = 'sent';
+
+    public const STATUS_FAILED = 'failed';
+
+    public const STATUS_ACKNOWLEDGED = 'acknowledged';
+
     protected $fillable = [
         'order_id',
         'provider_id',

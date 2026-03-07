@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Admin\ProviderController as AdminProviderController
 use App\Http\Controllers\Api\CheckoutOrderController;
 use App\Http\Controllers\Api\JoinLeadController;
 use App\Http\Controllers\Api\CartTokenController;
+use App\Http\Controllers\Api\ProviderAssignmentController;
 use App\Http\Controllers\Api\VendorController;
 use App\Http\Controllers\Api\ZoneController;
 use Illuminate\Support\Facades\Route;
@@ -38,6 +39,11 @@ Route::get('/vendors/{id}/catalog', [VendorController::class, 'catalog'])
 Route::post('/checkout/orders', [CheckoutOrderController::class, 'store'])
     ->middleware('throttle:checkout-orders');
 
+Route::post('/provider/assignments/{assignment}/accept', [ProviderAssignmentController::class, 'accept'])
+    ->whereNumber('assignment')
+    ->middleware('signed')
+    ->name('provider.assignments.accept');
+
 Route::prefix('admin')->group(function () use ($adminRoleMiddleware): void {
     Route::prefix('auth')->group(function (): void {
         Route::post('/login', [AdminAuthController::class, 'login'])
@@ -65,6 +71,8 @@ Route::prefix('admin')->group(function () use ($adminRoleMiddleware): void {
         Route::middleware('throttle:admin-write')->group(function (): void {
             Route::post('/providers', [AdminProviderController::class, 'store']);
             Route::patch('/providers/{provider}', [AdminProviderController::class, 'update']);
+            Route::post('/orders/{order}/mark-in-transit', [AdminOrderController::class, 'markInTransit']);
+            Route::post('/orders/{order}/mark-delivered', [AdminOrderController::class, 'markDelivered']);
         });
     });
 });
