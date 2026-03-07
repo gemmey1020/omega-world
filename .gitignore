@@ -1,4 +1,38 @@
+# OMEGA System Master Gitignore (Root)
+
+# --- Dependencies ---
 **/node_modules/
 **/vendor/
-client/.env.local
+.pnpm-store/
+
+# --- Next.js (Admin & Client) ---
+# Ignore build output and cache for all Next.js apps
+**/.next/
+**/out/
+**/build/
+
+# --- Laravel (API) ---
+# Ignore storage, keys, and local configuration
+api/storage/*.key
+api/.phpunit.result.cache
+api/public/storage
+api/public/hot
+
+# --- Environment Secrets (CRITICAL) ---
+# Never commit local environment files
+**/.env
+**/.env.local
+**/.env.*.local
+**/.env.production
+!**/.env.example
+
+# --- Tooling & Debug ---
 .playwright-cli/
+**/npm-debug.log*
+**/yarn-debug.log*
+**/pnpm-debug.log*
+**/.eslintcache
+
+# --- Operating System Files ---
+.DS_Store
+Thumbs.db
