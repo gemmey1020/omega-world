@@ -1,3 +1,4 @@
+//
 export {
   Activity,
   AlertCircle,
@@ -15,11 +16,15 @@ export {
   Plus,
   Search,
   Settings2,
-  Shield,
-  TriangleAlert,
-  TrendingUp,
-  User,
   Users,
+  Lock,
+  Mail,
+  Loader2,
+  Shield,
+  TrendingUp,
+  TriangleAlert,
+  LogOut,
+  ExternalLink
 } from 'lucide-react';
 
 export type { LucideIcon } from 'lucide-react';

@@ -46,18 +46,15 @@ export default function SideNav() {
 
   return (
     <>
-      {/* Desktop Navigation */}
       <aside
-        className={`fixed left-0 top-16 bottom-0 border-r border-border bg-navy transition-all duration-300 z-30 hidden md:flex flex-col ${
-          isCollapsed ? 'w-20' : 'w-60'
-        }`}
+        className={`fixed left-0 top-16 bottom-0 border-r border-slate-800/50 bg-[#020617] transition-all duration-300 z-30 hidden md:flex flex-col ${isCollapsed ? 'w-20' : 'w-64'
+          }`}
       >
-        {/* Nav Content */}
-        <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-8">
+        <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-8 custom-scrollbar">
           {navSections.map((section) => (
             <div key={section.title} className="space-y-2">
               {!isCollapsed && (
-                <h3 className="px-4 text-xs font-semibold text-slate uppercase tracking-wider">
+                <h3 className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                   {section.title}
                 </h3>
               )}
@@ -76,24 +73,16 @@ export default function SideNav() {
           ))}
         </nav>
 
-        {/* Collapse Toggle */}
-        <div className="border-t border-border p-3">
+        <div className="p-4 border-t border-slate-800/50">
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="omega-control inline-flex w-full items-center justify-center border border-border text-slate hover:text-foreground hover:bg-surface transition-colors"
+            className="omega-control flex w-full items-center justify-center border border-teal-500/20 text-slate-400 hover:text-teal-400 hover:bg-teal-500/5 transition-all duration-200"
             aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            {isCollapsed ? (
-              <ChevronRight className="w-4 h-4" />
-            ) : (
-              <ChevronLeft className="w-4 h-4" />
-            )}
+            {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
           </button>
         </div>
       </aside>
-
-      {/* Mobile Navigation Placeholder */}
-      <div className="md:hidden h-16" />
     </>
   );
 }
