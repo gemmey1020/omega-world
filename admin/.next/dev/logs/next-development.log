@@ -20,3 +20,4 @@
 [00:12:28.262] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/admin/src/app'
 [00:12:28.264] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/opt/lampp/htdocs/2nd_epoche/new_yg_system/omega-world/admin/src/app'
 [00:12:28.305] Server  LOG     ✓ Compiled in 307ms
+[00:13:21.521] Server  LOG     ✓ Compiled in 0ms

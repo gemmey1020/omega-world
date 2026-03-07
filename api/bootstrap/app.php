@@ -1,8 +1,10 @@
 <?php
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 $trustedProxies = array_values(array_filter(array_map(
     static fn (string $proxy): string => trim($proxy),
@@ -20,6 +22,14 @@ return Application::configure(basePath: dirname(__DIR__))
         __DIR__.'/../app/Console/Commands',
     ])
     ->withMiddleware(function (Middleware $middleware) use ($trustedProxies): void {
+        $middleware->redirectGuestsTo(static function (Request $request): ?string {
+            if ($request->is('api/*')) {
+                return null;
+            }
+
+            return route('login');
+        });
+
         $middleware->web(prepend: [
             \App\Http\Middleware\ResolveSessionCookieName::class,
         ]);
@@ -39,5 +49,17 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->shouldRenderJsonWhen(
+            static fn (Request $request, \Throwable $exception): bool => $request->is('api/*') || $request->expectsJson()
+        );
+
+        $exceptions->render(function (AuthenticationException $exception, Request $request) {
+            if (! $request->is('api/admin/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 401);
+        });
     })->create();

@@ -4,25 +4,16 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\LoginRequest;
+use App\Http\Requests\Admin\RegisterAdminRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    /**
-     * @var list<string>
-     */
-    private const ADMIN_ROLES = [
-        'super_admin',
-        'ops_dispatcher',
-        'support_analyst',
-        'catalog_manager',
-        'merchant_success',
-    ];
-
     public function login(LoginRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -45,7 +36,7 @@ class AuthController extends Controller
         /** @var User|null $user */
         $user = Auth::guard('admin')->user();
 
-        if (! $user || ! $user->hasAnyRole(self::ADMIN_ROLES)) {
+        if (! $user || ! $user->hasAnyRole($this->adminRoles())) {
             Auth::guard('admin')->logout();
 
             if ($request->hasSession()) {
@@ -57,8 +48,33 @@ class AuthController extends Controller
         }
 
         return response()->json([
-            'data' => $this->serializeUser($user),
+            'data' => $this->serializeAdminUser($user),
         ]);
+    }
+
+    public function register(RegisterAdminRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        /** @var User $user */
+        $user = DB::transaction(function () use ($validated): User {
+            $user = User::query()->create([
+                'name' => trim((string) $validated['name']),
+                'email' => strtolower(trim((string) $validated['email'])),
+                'password' => (string) $validated['password'],
+                'phone' => isset($validated['phone']) ? trim((string) $validated['phone']) : null,
+                'zone_id' => $validated['zone_id'] ?? null,
+                'device_hash' => null,
+            ]);
+
+            $user->syncRoles([(string) $validated['role']]);
+
+            return $user->fresh();
+        });
+
+        return response()->json([
+            'data' => $this->serializeAdminUser($user),
+        ], 201);
     }
 
     public function logout(Request $request): JsonResponse
@@ -79,14 +95,14 @@ class AuthController extends Controller
         $user = $request->user('admin');
 
         return response()->json([
-            'data' => $this->serializeUser($user),
+            'data' => $this->serializeAdminUser($user),
         ]);
     }
 
     /**
      * @return array<string, mixed>
      */
-    private function serializeUser(User $user): array
+    private function serializeAdminUser(User $user): array
     {
         return [
             'id' => $user->id,
@@ -95,6 +111,18 @@ class AuthController extends Controller
             'phone' => $user->phone,
             'zone_id' => $user->zone_id,
             'roles' => $user->getRoleNames()->values()->all(),
+            'permissions' => $user->getAllPermissions()->pluck('name')->values()->all(),
         ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function adminRoles(): array
+    {
+        return array_values(array_filter(
+            (array) config('admin.roles', []),
+            static fn (mixed $role): bool => is_string($role) && $role !== ''
+        ));
     }
 }

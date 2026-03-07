@@ -12,7 +12,12 @@ use App\Http\Controllers\Api\VendorController;
 use App\Http\Controllers\Api\ZoneController;
 use Illuminate\Support\Facades\Route;
 
-$adminRoleMiddleware = 'role:super_admin|ops_dispatcher|support_analyst|catalog_manager|merchant_success,admin';
+$adminRoles = array_values(array_filter(
+    (array) config('admin.roles', []),
+    static fn (mixed $role): bool => is_string($role) && $role !== ''
+));
+$adminRoleMiddleware = 'role:'.implode('|', $adminRoles).',admin';
+$superAdminRoleMiddleware = 'role:'.(string) config('admin.root_role', 'super_admin').',admin';
 
 Route::get('/zones', [ZoneController::class, 'index'])
     ->middleware('throttle:zones');
@@ -44,19 +49,22 @@ Route::post('/provider/assignments/{assignment}/accept', [ProviderAssignmentCont
     ->middleware('signed')
     ->name('provider.assignments.accept');
 
-Route::prefix('admin')->group(function () use ($adminRoleMiddleware): void {
+Route::prefix('admin')->group(function () use ($adminRoleMiddleware, $superAdminRoleMiddleware): void {
     Route::prefix('auth')->group(function (): void {
         Route::post('/login', [AdminAuthController::class, 'login'])
             ->middleware('throttle:admin-auth');
     });
 
-    Route::middleware(['auth:admin', $adminRoleMiddleware])->group(function (): void {
-        Route::prefix('auth')->group(function (): void {
+    Route::middleware(['auth:admin', $adminRoleMiddleware])->group(function () use ($superAdminRoleMiddleware): void {
+        Route::prefix('auth')->group(function () use ($superAdminRoleMiddleware): void {
             Route::post('/logout', [AdminAuthController::class, 'logout'])
                 ->middleware('throttle:admin-write');
 
             Route::get('/me', [AdminAuthController::class, 'me'])
                 ->middleware('throttle:admin-read');
+
+            Route::post('/register', [AdminAuthController::class, 'register'])
+                ->middleware([$superAdminRoleMiddleware, 'throttle:admin-write']);
         });
 
         Route::middleware('throttle:admin-read')->group(function (): void {

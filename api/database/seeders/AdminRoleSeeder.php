@@ -15,13 +15,7 @@ class AdminRoleSeeder extends Seeder
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        foreach ([
-            'super_admin',
-            'ops_dispatcher',
-            'support_analyst',
-            'catalog_manager',
-            'merchant_success',
-        ] as $roleName) {
+        foreach (config('admin.roles', []) as $roleName) {
             Role::findOrCreate($roleName, 'admin');
         }
     }
