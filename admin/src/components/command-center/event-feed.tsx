@@ -130,7 +130,7 @@ export default function EventFeed() {
       </div>
 
       <div className="px-6 py-3 border-t border-border bg-navy/50">
-        <button className="text-xs font-semibold text-emerald hover:text-emerald/80 transition-colors">
+        <button className="omega-control inline-flex items-center text-xs font-semibold text-emerald hover:text-emerald/80 transition-colors">
           View all events →
         </button>
       </div>

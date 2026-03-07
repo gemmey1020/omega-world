@@ -38,6 +38,4 @@ function OmegaEmptyStateImpl({
   );
 }
 
-const OmegaEmptyState = React.memo(OmegaEmptyStateImpl);
-
-export default OmegaEmptyState;
+export const OmegaEmptyState = React.memo(OmegaEmptyStateImpl);

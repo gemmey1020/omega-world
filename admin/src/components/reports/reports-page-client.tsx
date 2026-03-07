@@ -3,8 +3,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { AdminApiError, fetchAdminSlaCompliance } from '@/lib/admin-api';
 import { AdminSlaCompliancePoint } from '@/lib/admin-report-types';
-import OmegaEmptyState from '@/components/shared/omega-empty-state';
-import OmegaErrorPanel from '@/components/shared/omega-error-panel';
+import { OmegaEmptyState } from '@/components/shared/omega-empty-state';
+import { OmegaErrorPanel } from '@/components/shared/omega-error-panel';
 import EfficiencyDonutChart from './efficiency-donut-chart';
 import PeakVolumeChart from './peak-volume-chart';
 import SLAComplianceChart from './sla-compliance-chart';

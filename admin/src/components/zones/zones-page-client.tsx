@@ -3,8 +3,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { AdminApiError, fetchAdminZoneHealth } from '@/lib/admin-api';
 import { AdminZoneHealthModel } from '@/lib/admin-zone-types';
-import OmegaEmptyState from '@/components/shared/omega-empty-state';
-import OmegaErrorPanel from '@/components/shared/omega-error-panel';
+import { OmegaEmptyState } from '@/components/shared/omega-empty-state';
+import { OmegaErrorPanel } from '@/components/shared/omega-error-panel';
 import ZoneCard from './zone-card';
 
 export default function ZonesPageClient() {

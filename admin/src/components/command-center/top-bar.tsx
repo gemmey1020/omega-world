@@ -32,18 +32,18 @@ export default function TopBar() {
         {/* Right Actions */}
         <div className="flex items-center gap-3">
           <button
-            className="omega-control inline-flex min-h-[56px] min-w-[56px] items-center justify-center border border-border bg-navy text-slate transition-colors hover:text-foreground hover:bg-navy/80"
+            className="omega-control inline-flex min-w-[56px] items-center justify-center border border-border bg-navy text-slate transition-colors hover:text-foreground hover:bg-navy/80"
             aria-label="Notifications"
           >
             <Bell className="h-5 w-5" />
           </button>
           <button
-            className="omega-control inline-flex min-h-[56px] min-w-[56px] items-center justify-center border border-border bg-navy text-slate transition-colors hover:text-foreground hover:bg-navy/80"
+            className="omega-control inline-flex min-w-[56px] items-center justify-center border border-border bg-navy text-slate transition-colors hover:text-foreground hover:bg-navy/80"
             aria-label="Settings"
           >
             <Settings2 className="h-5 w-5" />
           </button>
-          <div className="omega-control flex min-h-[56px] min-w-[56px] items-center justify-center rounded-[var(--radius-primary)] bg-gradient-to-br from-emerald to-slate flex-shrink-0">
+          <div className="omega-control flex min-w-[56px] items-center justify-center bg-gradient-to-br from-emerald to-slate flex-shrink-0">
             <span className="text-navy font-semibold text-xs">AD</span>
           </div>
         </div>

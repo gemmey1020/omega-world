@@ -3,8 +3,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AdminApiError, fetchAdminVendorsPage } from '@/lib/admin-api';
 import { AdminVendorListMeta, AdminVendorRowModel } from '@/lib/admin-vendor-types';
-import OmegaEmptyState from '@/components/shared/omega-empty-state';
-import OmegaErrorPanel from '@/components/shared/omega-error-panel';
+import { OmegaEmptyState } from '@/components/shared/omega-empty-state';
+import { OmegaErrorPanel } from '@/components/shared/omega-error-panel';
 import VendorsTable from './vendors-table';
 
 const PAGE_SIZE = 100;

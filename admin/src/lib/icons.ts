@@ -1,4 +1,3 @@
-//
 export {
   Activity,
   AlertCircle,
@@ -24,7 +23,8 @@ export {
   TrendingUp,
   TriangleAlert,
   LogOut,
-  ExternalLink
+  ExternalLink,
+  User,
 } from 'lucide-react';
 
 export type { LucideIcon } from 'lucide-react';

@@ -2,7 +2,7 @@
 
 import { startTransition, useCallback, useEffect, useRef, useState } from 'react';
 import OrdersVirtualList from '@/components/orders/orders-virtual-list';
-import OmegaErrorPanel from '@/components/shared/omega-error-panel';
+import { OmegaErrorPanel } from '@/components/shared/omega-error-panel';
 import { AdminApiError, fetchAdminOrdersPage } from '@/lib/admin-api';
 import { AdminOrderRowModel, AdminOrdersMeta } from '@/lib/admin-order-types';
 

@@ -11,8 +11,8 @@ import {
   RegisterAdminPayload,
 } from '@/lib/admin-user-types';
 import { AdminZoneHealthModel } from '@/lib/admin-zone-types';
-import OmegaEmptyState from '@/components/shared/omega-empty-state';
-import OmegaErrorPanel from '@/components/shared/omega-error-panel';
+import { OmegaEmptyState } from '@/components/shared/omega-empty-state';
+import { OmegaErrorPanel } from '@/components/shared/omega-error-panel';
 import { Plus, Search, Shield, User } from '@/lib/icons';
 import UserRow from './user-row';
 

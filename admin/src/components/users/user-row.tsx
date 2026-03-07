@@ -69,7 +69,7 @@ function UserRowImpl({ user }: UserRowProps) {
 
         <button
           type="button"
-          className="omega-control inline-flex min-h-[56px] min-w-[56px] items-center justify-center border border-border bg-transparent text-slate opacity-0 transition-all hover:bg-slate/10 group-hover:opacity-100"
+          className="omega-control inline-flex min-w-[56px] items-center justify-center border border-border bg-transparent text-slate opacity-0 transition-all hover:bg-slate/10 group-hover:opacity-100"
         >
           <MoreVertical className="h-4 w-4" />
         </button>
